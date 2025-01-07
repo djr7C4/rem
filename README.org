@@ -1,0 +1,3 @@
+* REM (Random Elisp Modules)
+
+REM is an assortment of generic utilities that are used in my other packages. They are available here to avoid duplication.
