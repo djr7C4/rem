@@ -19,6 +19,15 @@
 
 (defvar rem-elisp-file-regexp (s-join "\\|" rem-elisp-extensions))
 
+(defun rem-elisp-files-to-load (path)
+  (cl-remove-duplicates (mapcar #'f-no-ext
+                                (f-entries path
+                                           (lambda (path)
+                                             (or (f-dir-p path)
+                                                 (member (f-ext path) rem-elisp-extensions)))
+                                           t))
+                        :test #'equal))
+
 (defun rem-slash (path)
   "Unconditionally add a slash to PATH. This is different from
 `f-slash' which only adds a slash if PATH points to a directory."
