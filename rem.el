@@ -16,13 +16,21 @@
 
 ;;; Files
 (defvar rem-elisp-extensions '("el" "elc"))
-
 (defvar rem-elisp-file-regexp (s-join "\\|" rem-elisp-extensions))
 
-(defun rem-elisp-files-to-load (path)
+(defun rem-dir-locals-file-names ()
+  (let ((files (list dir-locals-file)))
+    ;; Copied from files.el.
+    (when (string-match "\\.el\\'" file-1)
+      (push (replace-match "-2.el" t nil file-1) files)))
+  files)
+
+(defun rem-elisp-files-to-load (dir)
   (cl-remove-duplicates (mapcar #'f-no-ext
-                                (-filter #'f-file-p
-                                         (f-entries path
+                                (-filter (lambda (path)
+                                           (and (f-file-p path)
+                                                (not (member path (rem-dir-locals-file-names)))))
+                                         (f-entries dir
                                                     (lambda (path)
                                                       (or (f-dir-p path)
                                                           (member (f-ext path) rem-elisp-extensions)))
