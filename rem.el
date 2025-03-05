@@ -21,11 +21,12 @@
 
 (defun rem-elisp-files-to-load (path)
   (cl-remove-duplicates (mapcar #'f-no-ext
-                                (f-entries path
-                                           (lambda (path)
-                                             (or (f-dir-p path)
-                                                 (member (f-ext path) rem-elisp-extensions)))
-                                           t))
+                                (-filter #'f-file-p
+                                         (f-entries path
+                                                    (lambda (path)
+                                                      (or (f-dir-p path)
+                                                          (member (f-ext path) rem-elisp-extensions)))
+                                                    t)))
                         :test #'equal))
 
 (defun rem-slash (path)
