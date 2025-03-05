@@ -21,15 +21,15 @@
 (defun rem-dir-locals-file-names ()
   (let ((files (list dir-locals-file)))
     ;; Copied from files.el.
-    (when (string-match "\\.el\\'" file-1)
-      (push (replace-match "-2.el" t nil file-1) files)))
-  files)
+    (when (string-match "\\.el\\'" dir-locals-file)
+      (push (replace-match "-2.el" t nil dir-locals-file) files))
+    files))
 
 (defun rem-elisp-files-to-load (dir)
   (cl-remove-duplicates (mapcar #'f-no-ext
                                 (-filter (lambda (path)
                                            (and (f-file-p path)
-                                                (not (member path (rem-dir-locals-file-names)))))
+                                                (not (member (f-filename path) (rem-dir-locals-file-names)))))
                                          (f-entries dir
                                                     (lambda (path)
                                                       (or (f-dir-p path)
