@@ -147,6 +147,17 @@ directory."
        (let ((string2 (concat string)))
          string2)))
 
+(defun rem-join-and (strings)
+  (cond
+   ((null strings)
+    "")
+   ((= (length strings) 1)
+    (car strings))
+   (t
+    (concat (s-join ", " (butlast strings))
+            " and "
+            (car (last strings))))))
+
 ;;; Looking back
 (defun rem-looking-back-p (regexp &optional limit greedy)
   "Check if text before point matches REGEXP, without changing match data.
