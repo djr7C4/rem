@@ -265,7 +265,7 @@ LIMIT and GREEDY have the same meaning as in `looking-back'."
                    (cycle-sort-function . ,sort-fun))
       (complete-with-action action collection string predicate))))
 
-(cl-defun rem-comp-read (prompt collection &key predicate require-match initial-input history default sort-fun keymap)
+(cl-defun rem-comp-read (prompt collection &key predicate require-match initial-input history default sort-fun keymap multiple)
   "Most of the arguments are the same as for `completing-read' but are keyword
 arguments instead. history must be a symbol. INITIAL-INPUT should
 not be used as it is better to use DEFAULT so that the user can
@@ -280,7 +280,9 @@ modify collection. If KEYMAP is non-nil, it will be used to
 create temporary key bindings that will be available during this
 call to `completing-read'. (throw \\='rem-comp-read return-value)
 can be used to create commands that can return from the
-`completing-read' call."
+`completing-read' call. If MULTIPLE is non-nil, multiple
+candidates will be allowed using the completion framework's
+facilities for it or `completing-read-multiple'."
   ;; Some completion frameworks (e.g. helm) cannot handle the other options for
   ;; history that `completing-read' allows.
   (cl-assert (symbolp history))
@@ -301,6 +303,7 @@ can be used to create commands that can return from the
           ('helm
            (declare-function helm-comp-read "helm-mode")
            (defvar helm-comp-read-map)
+           ;; `helm-comp-read' already supports multiple candidates.
            (helm-comp-read prompt
                            collection
                            :predicate predicate
@@ -364,7 +367,7 @@ can be used to create commands that can return from the
              ;; to be set in a generic way across different frameworks.
              (minibuffer-with-setup-hook (:append #'setup-keymap)
                (funcall funcall-with-env
-                        #'completing-read
+                        (if multiple #'completing-read-multiple #'completing-read)
                         prompt
                         (if sort-fun
                             (rem-collection-with-sort-fun collection sort-fun)
