@@ -15,7 +15,7 @@
     (clipboard-kill-ring-save (point-min) (point-max))))
 
 ;;; Files
-(defvar rem-elisp-extensions '("el" "elc" "eln"))
+(defvar rem-elisp-extensions '("el" "elc"))
 
 (defvar rem-elisp-file-regexp (s-join "\\|" rem-elisp-extensions))
 
