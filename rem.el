@@ -286,8 +286,14 @@ LIMIT and GREEDY have the same meaning as in `looking-back'."
 (defun rem-collection-with-sort-fun (collection sort-fun)
   (lambda (string predicate action)
     (if (eq action 'metadata)
-        `(metadata (display-sort-function . ,sort-fun)
-                   (cycle-sort-function . ,sort-fun))
+        (let ((metadata (cdr (completion-metadata (minibuffer-contents)
+                                                  collection
+                                                  minibuffer-completion-predicate))))
+          `(metadata
+            ,@(map-merge 'alist
+                         metadata
+                         `((display-sort-function . ,sort-fun)
+                           (cycle-sort-function . ,sort-fun)))))
       (complete-with-action action collection string predicate))))
 
 (cl-defun rem-comp-read (prompt collection &key predicate require-match initial-input history default sort-fun keymap multiple)
