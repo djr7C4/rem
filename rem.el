@@ -283,20 +283,28 @@ LIMIT and GREEDY have the same meaning as in `looking-back'."
        ((bound-and-true-p fido-mode) 'fido)
        (t 'default))))
 
-(defun rem-collection-with-sort-fun (collection sort-fun)
+(defun rem-collection-with-metadata (collection new-metadata &optional override)
   (lambda (string predicate action)
     (if (eq action 'metadata)
-        (let ((metadata (cdr (completion-metadata (minibuffer-contents)
-                                                  collection
-                                                  minibuffer-completion-predicate))))
-          `(metadata
-            ,@(map-merge 'alist
-                         metadata
-                         `((display-sort-function . ,sort-fun)
-                           (cycle-sort-function . ,sort-fun)))))
+        (progn
+          (when (functionp new-metadata)
+            (setq new-metadata (funcall new-metadata collection)))
+          (if override
+              `(metadata ,@new-metadata)
+            (let ((current-metadata (cdr (completion-metadata (minibuffer-contents)
+                                                              collection
+                                                              minibuffer-completion-predicate))))
+              `(metadata
+                ,@(map-merge 'alist current-metadata new-metadata)))))
       (complete-with-action action collection string predicate))))
 
-(cl-defun rem-comp-read (prompt collection &key predicate require-match initial-input history default sort-fun keymap multiple)
+(defun rem-collection-with-sort-fun (collection sort-fun &optional override)
+  (rem-collection-with-metadata collection
+                                `((display-sort-function . ,sort-fun)
+                                  (cycle-sort-function . ,sort-fun))
+                                override))
+
+(cl-defun rem-comp-read (prompt collection &key predicate require-match initial-input history default sort-fun metadata override-metadata keymap multiple)
   "Most of the arguments are the same as for `completing-read' but are keyword
 arguments instead. history must be a symbol. INITIAL-INPUT should
 not be used as it is better to use DEFAULT so that the user can
@@ -307,16 +315,23 @@ considered obsolete.
 INHERIT-INPUT-METHOD is not supported because several frameworks
 do not support it. If SORT-FUN is non-nil, it will be used to
 sort collection before completion is performed. It should not
-modify collection. If KEYMAP is non-nil, it will be used to
-create temporary key bindings that will be available during this
-call to `completing-read'. (throw \\='rem-comp-read return-value)
-can be used to create commands that can return from the
-`completing-read' call. If MULTIPLE is non-nil, multiple
+modify collection. If METADATA is non-nil, it should be an alist
+that is merged with the completion metadata. It can also be a
+function that is called with the completion table as an argument
+to produce the metadata to merge. If OVERRIDE-METADATA is
+non-nil, then METADATA will replace the completion metadata
+instead of being merged with it. If KEYMAP is non-nil, it will be
+used to create temporary key bindings that will be available
+during this call to `completing-read'. (throw \\='rem-comp-read
+return-value) can be used to create commands that can return from
+the `completing-read' call. If MULTIPLE is non-nil, multiple
 candidates will be allowed using the completion framework's
 facilities for it or `completing-read-multiple'."
   ;; Some completion frameworks (e.g. helm) cannot handle the other options for
   ;; history that `completing-read' allows.
   (cl-assert (symbolp history))
+  (when metadata
+    (setq collection (rem-collection-with-metadata collection metadata override-metadata)))
   (defvar vertico-preselect)
   ;; Give user-defined functions in the keymap a way to short-circuit the
   ;; `completing-read' call.
