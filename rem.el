@@ -83,9 +83,14 @@ is nil, use the current point's position."
                  (point)))
         (end (save-excursion
                (goto-char pt)
-               (beginning-of-visual-line)
+               (end-of-visual-line)
                (point))))
-    (1+ (count-screen-lines start end))))
+    ;; When we are on the first line and it is empty, start and end will be the
+    ;; same. In this case, `count-screen-lines' would return 0 since the number
+    ;; of lines between start and end is 0.
+    (if (= start end)
+        1
+      (count-screen-lines start end))))
 
 (defun rem-move-current-window-line-to-pos (offset)
   "Move the current line to index OFFSET in the selected window.
