@@ -56,6 +56,16 @@
 `f-slash' which only adds a slash if PATH points to a directory."
   (file-name-as-directory path))
 
+;;; Time
+(defun rem-seconds (&optional time)
+  (/ (float (rem-ticks time)) rem-ticks-per-second))
+
+(defun rem-ticks (&optional time)
+  (setq time (or time (current-time)))
+  (car (time-convert time t)))
+
+(defvar rem-ticks-per-second (cdr (time-convert (current-time) t)))
+
 ;;; Trees
 (cl-defun rem-tree-find-if (pred tree &key (key (lambda (x) x)))
   "Find all subtrees in TREE satisfying PRED."
