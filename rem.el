@@ -447,6 +447,18 @@ DEFAULT so that the user can pull in the default value with M-n
 if they wish."
   (read-from-minibuffer prompt initial-contents keymap read history default inherit-input-method))
 
+;;; Symbols
+(defun rem-find-symbols (start &optional end)
+  "Return all symbols whose names start with START and optionally end with END."
+  (when (not end)
+    (setq end ""))
+  (let (syms name)
+    (cl-do-all-symbols (sym syms)
+      (setq name (symbol-name sym))
+      (when (and (s-starts-with-p start name)
+                 (s-ends-with-p end name))
+        (push sym syms)))))
+
 ;;; Shell commands
 (defmacro rem-with-bash (&rest body)
   "Bind `shell-file-name' to the path to bash while executing BODY."
