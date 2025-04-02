@@ -26,7 +26,8 @@
   (with-current-buffer buffer
     (buffer-string)))
 
-(defun rem-buffer-same-p (buffer buffer2)
+(defun rem-buffer-same-p (buffer &optional buffer2)
+  (setq buffer2 (or buffer2 (current-buffer)))
   (string= (rem-buffer-contents buffer) (rem-buffer-contents buffer2)))
 
 ;;; Clipboard
