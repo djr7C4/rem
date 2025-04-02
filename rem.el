@@ -92,10 +92,12 @@
 ;;; Movement and positions
 (defun rem-goto-column (column)
   (beginning-of-line)
+  ;; Columns are zero-indexed by `current-column'.
   (forward-char column))
 
 (defun rem-goto-line (line)
   (goto-char (point-min))
+  ;; Lines are one-indexed by `line-number-at-pos'.
   (forward-line (1- line)))
 
 (defun rem-goto-line-column (line &optional column no-error)
