@@ -89,7 +89,32 @@
   (setq path (f-canonical path))
   (length (f-split path)))
 
-;;; Window line number
+;;; Movement and positions
+(defun rem-goto-column (column)
+  (beginning-of-line)
+  (forward-char column))
+
+(defun rem-goto-line (line)
+  (goto-char (point-min))
+  (forward-line (1- line)))
+
+(defun rem-goto-line-column (line &optional column no-error)
+  "Go to LINE and COLUMN in the current buffer. If NO-ERROR is
+non-nil, go to the closest line and column instead of signaling
+an error. Return a list containing \\='line if moving to LINE was
+successful and \\'column if moving to COLUMN as successful."
+  (setq column (or column 0))
+  (if (<= line (count-lines (point-min) (point-max)))
+      (rem-goto-line line)
+    (if no-error
+        (goto-char (point-max))
+      (error "Line number %d does not exist" line)))
+  (if (< column (- (line-end-position) (line-beginning-position)))
+      (rem-goto-column column)
+    (if no-error
+        (end-of-line)
+      (error "Column number %d does not exist on line" column (line-number-at-pos)))))
+
 (defun rem-window-line-number-at-pos (&optional pt)
   "Return the index of the line at PT in the selected window.
 
