@@ -142,7 +142,7 @@ is nil, use the current point's position."
         1
       (count-screen-lines start end))))
 
-(defun rem-move-current-window-line-to-pos (offset)
+(cl-defun rem-move-current-window-line-to-pos (offset &optional (recenter t))
   "Move the current line to index OFFSET in the selected window.
 
 Indexing is from 1. (`move-to-window-line' OFFSET) will have no
@@ -151,9 +151,12 @@ effect after running this function."
     (error "Invalid index offset: %d" offset))
   ;; Convert to 0-indexing.
   (setq offset (1- offset))
-  (line-move-visual (- offset))
-  (recenter 0)
-  (line-move-visual offset))
+  (let ((column (current-column)))
+    (line-move-visual (- offset))
+    (when recenter
+      (recenter 0))
+    (line-move-visual offset)
+    (rem-goto-column column)))
 
 ;;; Default directories
 (defmacro rem-with-directory (dir &rest body)
