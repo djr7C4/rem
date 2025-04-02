@@ -104,16 +104,22 @@ non-nil, go to the closest line and column instead of signaling
 an error. Return a list containing \\='line if moving to LINE was
 successful and \\'column if moving to COLUMN as successful."
   (setq column (or column 0))
-  (if (<= line (count-lines (point-min) (point-max)))
-      (rem-goto-line line)
-    (if no-error
-        (goto-char (point-max))
-      (error "Line number %d does not exist" line)))
-  (if (< column (- (line-end-position) (line-beginning-position)))
-      (rem-goto-column column)
-    (if no-error
-        (end-of-line)
-      (error "Column number %d does not exist on line" column (line-number-at-pos)))))
+  (let (success)
+    (if (<= line (count-lines (point-min) (point-max)))
+        (progn
+          (rem-goto-line line)
+          (push 'line success))
+      (if no-error
+          (goto-char (point-max))
+        (error "Line number %d does not exist" line)))
+    (if (< column (- (line-end-position) (line-beginning-position)))
+        (progn
+          (rem-goto-column column)
+          (push 'column success))
+      (if no-error
+          (end-of-line)
+        (error "Column number %d does not exist on line" column (line-number-at-pos))))
+    success))
 
 (defun rem-window-line-number-at-pos (&optional pt)
   "Return the index of the line at PT in the selected window.
