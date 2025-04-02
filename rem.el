@@ -297,12 +297,17 @@ LIMIT and GREEDY have the same meaning as in `looking-back'."
   (apply #'rem-set-keys (current-global-map) bindings))
 
 ;;; Archives
-(defun rem-extract-archive (path)
-  "Extract the archive located at PATH to its containing directory."
+(defun rem-extract-archive (path &optional subdir)
+  "Extract the archive located at PATH to its containing directory.
+When SUBDIR is non-nil, files are always extracted to a directory
+even if the archive is a single compressed file."
   (let ((dir (f-dirname path))
         (archive (f-filename path)))
     (rem-with-directory dir
-      (unless (= (call-process-shell-command (format "atool -x '%s'"
+      (unless (= (call-process-shell-command (format "atool%s -x '%s'"
+                                                     (if subdir
+                                                         " -D"
+                                                       "")
                                                      archive))
                  0)
         (error "Failed to extract %s" path)))))
