@@ -21,6 +21,14 @@
 (require 'rem-abbrev)
 (require 'url-parse)
 
+;;; Buffers
+(defun rem-buffer-contents (&optional buffer)
+  (with-current-buffer buffer
+    (buffer-string)))
+
+(defun rem-buffer-same-p (buffer buffer2)
+  (string= (rem-buffer-contents buffer) (rem-buffer-contents buffer2)))
+
 ;;; Clipboard
 (defun rem-clipboard-kill-ring-save-string (string)
   "Copy STRING to the `kill-ring' and system clipboard."
