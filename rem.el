@@ -53,11 +53,14 @@
 (defvar rem-elisp-extensions '("el" "elc"))
 
 (defun rem-dir-locals-file-names ()
-  (let ((files (list dir-locals-file)))
-    ;; Copied from files.el.
-    (when (string-match "\\.el\\'" dir-locals-file)
-      (push (replace-match "-2.el" t nil dir-locals-file) files))
-    files))
+  (save-match-data
+    (let (files)
+      ;; Copied from files.el.
+      (when (string-match "\\.el\\'" dir-locals-file)
+        (push (replace-match "-2.el" t nil dir-locals-file) files))
+      ;; Ensure that `dir-locals-file' is first in the list.
+      (push dir-locals-file files)
+      files)))
 
 (defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$"))
 
