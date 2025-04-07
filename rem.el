@@ -358,13 +358,6 @@ even if the archive is a single compressed file."
   "Return non-nil if string S is shortlex-less than string S2."
   (rem-shortlex< 'string< s s2))
 
-(defun rem-version< (v1 v2)
-  (and (not (and (null v1) (null v2)))
-       (or (null v1)
-           (rem-shortlex-string< (car v1) (car v2))
-           (and (string= (car v1) (car v2))
-                (rem-version< (cdr v1) (cdr v2))))))
-
 ;;; Completion framework compatibility
 (defvar rem-comp-preferred-framework nil
   "The preferred completion framework to use.")
