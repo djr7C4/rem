@@ -49,18 +49,19 @@
 
 (defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$"))
 
-(defun rem-elisp-files-to-load (dir)
-  (cl-remove-duplicates (mapcar #'f-no-ext
-                                (-filter (lambda (path)
-                                           (and (f-file-p path)
-                                                (not (member (f-filename path) (rem-dir-locals-file-names)))))
-                                         (f-entries dir
-                                                    (lambda (path)
-                                                      (or (f-dir-p path)
-                                                          (and (member (f-ext path) rem-elisp-extensions)
-                                                               (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
-                                                    t)))
-                        :test #'equal))
+(cl-defun rem-elisp-files-to-load (dir &key keep-ext)
+  (let ((files (-filter (lambda (path)
+                          (and (f-file-p path)
+                               (not (member (f-filename path) (rem-dir-locals-file-names)))))
+                        (f-entries dir
+                                   (lambda (path)
+                                     (or (f-dir-p path)
+                                         (and (member (f-ext path) rem-elisp-extensions)
+                                              (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
+                                   t)))))
+  (unless keep-ext
+    (setq files (mapcar #'f-no-ext files)))
+  (setq files (cl-remove-duplicates files :test #'equal)))
 
 (defun rem-slash (path)
   "Unconditionally add a slash to PATH. This is different from
