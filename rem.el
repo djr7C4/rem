@@ -1,7 +1,10 @@
-;;; -*- lexical-binding: t; -*-
-;; Random elisp modules
-;;
+;;; rem.el --- Random elisp modules -*- lexical-binding: t; -*-
 ;; Copyright (C) 2025 David J. Rosenbaum <djr7c4@gmail.com>
+
+;; Author: David J. Rosenbaum <djr7c4@gmail.com>
+;; Keywords: TODO
+;; URL: https://github.com/djr7C4/rem
+;; Package-Requires: ()
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of version 3 of the GNU General Public License, as
