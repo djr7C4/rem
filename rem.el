@@ -39,7 +39,6 @@
 
 ;;; Files
 (defvar rem-elisp-extensions '("el" "elc"))
-(defvar rem-elisp-file-regexp (s-join "\\|" rem-elisp-extensions))
 
 (defun rem-dir-locals-file-names ()
   (let ((files (list dir-locals-file)))
@@ -47,6 +46,8 @@
     (when (string-match "\\.el\\'" dir-locals-file)
       (push (replace-match "-2.el" t nil dir-locals-file) files))
     files))
+
+(defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$"))
 
 (defun rem-elisp-files-to-load (dir)
   (cl-remove-duplicates (mapcar #'f-no-ext
@@ -56,7 +57,8 @@
                                          (f-entries dir
                                                     (lambda (path)
                                                       (or (f-dir-p path)
-                                                          (member (f-ext path) rem-elisp-extensions)))
+                                                          (and (member (f-ext path) rem-elisp-extensions)
+                                                               (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
                                                     t)))
                         :test #'equal))
 
