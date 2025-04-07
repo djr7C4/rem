@@ -30,6 +30,18 @@
   (setq buffer2 (or buffer2 (current-buffer)))
   (string= (rem-buffer-contents buffer) (rem-buffer-contents buffer2)))
 
+(defun rem-replace-region (beg end new &optional pos)
+  (unless '(before beg start beginning after end)
+    (error "Invalid value for pos"))
+  (save-excursion
+    (delete-region beg end)
+    (goto-char beg)
+    (insert new))
+  (when pos
+    (goto-char beg)
+    (when (memq pos '(after end))
+      (forward-char (length new)))))
+
 ;;; Clipboard
 (defun rem-clipboard-kill-ring-save-string (string)
   "Copy STRING to the `kill-ring' and system clipboard."
@@ -67,6 +79,18 @@
   "Unconditionally add a slash to PATH. This is different from
 `f-slash' which only adds a slash if PATH points to a directory."
   (file-name-as-directory path))
+
+;;; Local variables
+(defun rem-ensure-prop-line ()
+  "Ensure that there is a (possibly empty) prop line and move point into it."
+  ;; `delete-file-local-variable-prop-line' requires an interned symbol so we
+  ;; intern a gensym and then unintern it later.
+  (let ((var (intern (symbol-name (gensym)))))
+    (unwind-protect
+        (progn
+          (add-file-local-variable-prop-line var 'val)
+          (delete-file-local-variable-prop-line var))
+      (unintern var))))
 
 ;;; Time
 (defun rem-seconds (&optional time)
