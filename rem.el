@@ -266,7 +266,7 @@ directory."
             (car (last strings))))))
 
 (defun rem-empty-nil (string &optional fun)
-  (unless (string= string "")
+  (unless (or (null string) (string= string ""))
     (if fun
         (funcall fun string)
       string)))
