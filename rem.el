@@ -265,9 +265,11 @@ directory."
             " and "
             (car (last strings))))))
 
-(defun rem-empty-nil (string)
+(defun rem-empty-nil (string &optional fun)
   (unless (string= string "")
-    string))
+    (if fun
+        (funcall fun string)
+      string)))
 
 ;;; Looking back
 (defun rem-looking-back-p (regexp &optional limit greedy)
