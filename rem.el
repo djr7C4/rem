@@ -265,6 +265,10 @@ directory."
             " and "
             (car (last strings))))))
 
+(defun rem-empty-nil (string)
+  (unless (string= string "")
+    string))
+
 ;;; Looking back
 (defun rem-looking-back-p (regexp &optional limit greedy)
   "Check if text before point matches REGEXP, without changing match data.
