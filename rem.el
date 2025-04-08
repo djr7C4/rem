@@ -266,6 +266,8 @@ directory."
             (car (last strings))))))
 
 (defun rem-empty-nil (string &optional fun)
+  "If STRING is nil or empty, return nil. Otherwise, return STRING.
+If FUN is non-nil, apply it to string before returning it."
   (unless (or (null string) (string= string ""))
     (if fun
         (funcall fun string)
