@@ -275,9 +275,9 @@ If FUN is non-nil, apply it to string before returning it."
 
 ;;; Looking back
 (defun rem-looking-back-p (regexp &optional limit greedy)
-  "Check if text before point matches REGEXP, without changing match data.
-
-LIMIT and GREEDY have the same meaning as in `looking-back'."
+  "Check if text before point matches REGEXP, without changing match
+data. LIMIT and GREEDY have the same meaning as in
+`looking-back'."
   (save-match-data
     (looking-back regexp limit greedy)))
 
