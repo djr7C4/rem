@@ -267,11 +267,14 @@ directory."
 
 (defun rem-empty-nil (string &optional fun)
   "If STRING is nil or empty, return nil. Otherwise, return STRING.
-If FUN is non-nil, apply it to string before returning it."
-  (unless (or (null string) (string= string ""))
-    (if fun
-        (funcall fun string)
-      string)))
+If FUN is non-nil, apply it to string before returning it. This
+function does not change the global state (including the match
+data)."
+  (save-match-data
+    (unless (or (null string) (string= string ""))
+      (if fun
+          (funcall fun string)
+        string))))
 
 ;;; Looking back
 (defun rem-looking-back-p (regexp &optional limit greedy)
