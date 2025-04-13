@@ -143,7 +143,7 @@ successful and \\'column if moving to COLUMN as successful."
           (push 'column success))
       (if no-error
           (end-of-line)
-        (error "Column number %d does not exist on line" column (line-number-at-pos))))
+        (error "Column number %d does not exist on line %d" column (line-number-at-pos))))
     success))
 
 (defun rem-window-line-number-at-pos (&optional pt)
