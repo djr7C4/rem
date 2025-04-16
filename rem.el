@@ -86,6 +86,10 @@
 `f-slash' which only adds a slash if PATH points to a directory."
   (file-name-as-directory path))
 
+(defun rem-no-slash (path)
+  "Ensure that PATH does not end with a slash."
+  (s-chop-suffix "/" path))
+
 ;;; Local variables
 (defun rem-ensure-prop-line ()
   "Ensure that there is a (possibly empty) prop line and move point into it."
