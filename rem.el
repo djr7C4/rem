@@ -90,8 +90,8 @@
   "Ensure that PATH does not end with a slash."
   (s-chop-suffix "/" path))
 
-(defun rem-relative-path (path path2)
-  (rem-slash (s-chop-prefix (rem-slash (f-canonical (stp-git-root path)))
+(defun rem-relative-path (path dir)
+  (rem-slash (s-chop-prefix (rem-slash (f-canonical (stp-git-root dir)))
                             (f-canonical path2))))
 
 ;;; Local variables
