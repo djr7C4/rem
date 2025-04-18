@@ -248,6 +248,13 @@ directory."
        (let ((string2 (concat string)))
          string2)))
 
+(defun rem-split-first (separator string)
+  "Split string at the first occurrence of separator."
+  (if-let ((start (cl-search separator string)))
+      (list (substring string 0 start)
+            (substring string (+ start (length separator))))
+    string))
+
 (defun rem-join-and (strings)
   (cond
    ((null strings)
