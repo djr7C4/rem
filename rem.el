@@ -92,7 +92,7 @@
 
 (defun rem-relative-path (path dir)
   (rem-slash (s-chop-prefix (rem-slash (f-canonical (stp-git-root dir)))
-                            (f-canonical path2))))
+                            (f-canonical path))))
 
 ;;; Local variables
 (defun rem-ensure-prop-line ()
