@@ -90,6 +90,10 @@
   "Ensure that PATH does not end with a slash."
   (s-chop-suffix "/" path))
 
+(defun rem-relative-path (path path2)
+  (rem-slash (s-chop-prefix (rem-slash (f-canonical (stp-git-root path)))
+                            (f-canonical path2))))
+
 ;;; Local variables
 (defun rem-ensure-prop-line ()
   "Ensure that there is a (possibly empty) prop line and move point into it."
