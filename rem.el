@@ -558,38 +558,62 @@ if they wish."
   `(let ((shell-file-name (executable-find "bash")))
      ,@body))
 
-(defun rem-run-shell-command-impl (command allow-remote)
-  "Find COMMAND in the system path and memoize the result.
-
-If the ALLOW-REMOTE is non-nil, look for the command in the
-remote system."
-  (let ((fun (if allow-remote
-                 #'process-file-shell-command
-               #'call-process-shell-command)))
-    (rem-with-bash
-      (with-temp-buffer
-        (list (funcall fun command nil (current-buffer))
-              (buffer-substring-no-properties 1 (point-max)))))))
-
-(defun rem-call-process-shell-command (command)
+(cl-defun rem-run-command (command &key allow-remote (trim-output t) process-output validation error)
   "Execute COMMAND and return its exit code and output as a list.
 
-This is similar to `call-process-shell-command', but it returns a
-list of the form (EXIT-CODE OUTPUT). EXIT-CODE can be either a
-numeric exit code or a string describing a signal. As for
-`call-process-shell-command', command is always run on the
-localhost."
-  (rem-run-shell-command-impl command nil))
+By default, this is similar to `call-process-shell-command',
+except that it returns a list of the form (EXIT-CODE OUTPUT).
+EXIT-CODE can be either a numeric exit code or a string
+describing a signal.
 
-(defun rem-process-file-shell-command (command)
-  "Execute COMMAND and return its exit code and output as a list.
+As with `call-process-shell-command', by default COMMAND is
+always run on the localhost. When ALLOW-REMOTE is non-nil,
+command will be run on a remote host if `default-directory'
+points to one (as with `process-file-shell-command').
 
-This is `process-file-shell-command', but returns a list of the
-form (EXIT-CODE output). EXIT-CODE can be either a numeric exit
-code or a string describing a signal. As for
-`process-file-shell-command', command will be run on a remote
-host if indicated by `default-directory'."
-  (rem-run-shell-command-impl command t))
+When TRIM-OUTPUT is non-nil, whitespace will be removed from the
+ends of the output string before it is returned. When
+PROCESS-OUTPUT is non-nil, it should be a function to apply to
+the output. This occurs after trimming (if applicable).
+
+When VALIDATION is non-nil, it describes how the exit code and
+output should be validated. When VALIDATION is t, validation
+succeeds if the exit code is non-zero. When it is a natural
+number or a string, it succeeds when the exit code is equal to
+validation. When it is a function, it succeeds when the function
+applied to the exit code and the output returns non-nil.
+
+When ERROR is non-nil and validation fails, an error is signaled
+instead of returning nil. If ERROR is a function, it is applied
+to the exit code and output when an error occurs."
+  (rem-with-bash
+    (with-temp-buffer
+      (let* ((run (if allow-remote
+                      #'process-file-shell-command
+                    #'call-process-shell-command))
+             (exit-code (funcall run command nil (current-buffer)))
+             (output (buffer-substring-no-properties 1 (point-max))))
+        (when trim-output
+          (setq output (s-trim output)))
+        (or (cond
+             ((null validation)
+              (list exit-code output))
+             ((eq validation t)
+              (and (= exit-code 0) output))
+             ((or (natnump validation) (stringp validation))
+              (and (equal exit-code validation) output))
+             ((functionp validation)
+              (and (funcall validation exit-code output) output))
+             (t
+              (error "Unknown value %S for validation" validation)))
+            (and error
+                 (if (functionp error)
+                     (funcall error exit-code output)
+                   (error (format "The command '%s' failed with exit code %s and output \"%s\""
+                                  (if (stringp exit-code)
+                                      (format "\"%s\"" exit-code)
+                                    exit-code)
+                                  output)))))))))
 
 ;;; Email
 (defvar rem-email-address-regexp "[a-zA-Z0-9_!#$%&'*+-/=?]+@[a-zA-Z0-9.-]+")
