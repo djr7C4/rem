@@ -631,6 +631,7 @@ is any other value, that value is returned."
             (funcall error exit-code output))
            (error
             (error (format "The command '%s' failed with exit code %s and output \"%s\""
+                           command
                            (if (stringp exit-code)
                                (format "\"%s\"" exit-code)
                              exit-code)
