@@ -630,8 +630,9 @@ is any other value, that value is returned."
            ((functionp error)
             (funcall error exit-code output))
            (error
-            (error (format "The command '%s' failed with exit code %s and output \"%s\""
+            (error (format "The command \"%s\" in \"%s\" failed with exit code %s and output \"%s\""
                            command
+                           default-directory
                            (if (stringp exit-code)
                                (format "\"%s\"" exit-code)
                              exit-code)
