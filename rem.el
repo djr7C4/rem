@@ -558,6 +558,8 @@ if they wish."
   `(let ((shell-file-name (executable-find "bash")))
      ,@body))
 
+(def-edebug-spec rem-with-bash t)
+
 (cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t) (return 'output) error)
   "Execute COMMAND and return its exit code and output as a list.
 
@@ -630,13 +632,13 @@ is any other value, that value is returned."
            ((functionp error)
             (funcall error exit-code output))
            (error
-            (error (format "The command \"%s\" in \"%s\" failed with exit code %s and output \"%s\""
-                           command
-                           default-directory
-                           (if (stringp exit-code)
-                               (format "\"%s\"" exit-code)
-                             exit-code)
-                           output)))))))))
+            (error "The command \"%s\" in \"%s\" failed with exit code %s and output \"%s\""
+                   command
+                   default-directory
+                   (if (stringp exit-code)
+                       (format "\"%s\"" exit-code)
+                     exit-code)
+                   output))))))))
 
 (defun rem-call-process-shell-command (command)
   (rem-run-command command :validate nil :return 'both))
