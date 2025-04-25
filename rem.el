@@ -592,13 +592,14 @@ code and output and the result is returned. ERROR is allowed to
 signal an error. When ERROR is nil, nil is returned.
 
 When validation succeeds, the return value is determined by
-RETURN. If RETURN is \\='both, a list of the form (EXIT-CODE
-OUTPUT) is returned. EXIT-CODE can be either a numeric exit code
-or a string describing a signal. When RETURN is \\='output, the
-output from COMMAND is returned. When it is \\='exit-code, the
-exit-code is returned. When it is a function, it is applied to
-the exit-code and output and the result is returned. When RETURN
-is any other value, that value is returned."
+RETURN. If RETURN is \\='both, validation is skipped and a list
+of the form (EXIT-CODE OUTPUT) is returned. EXIT-CODE can be
+either a numeric exit code or a string describing a signal. When
+RETURN is \\='output, the output from COMMAND is returned. When
+it is \\='exit-code, the exit-code is returned. When it is a
+function, it is applied to the exit-code and output and the
+result is returned. When RETURN is any other value, that value is
+returned."
   (rem-with-bash
     (with-temp-buffer
       (let* ((run (if allow-remote
@@ -607,15 +608,16 @@ is any other value, that value is returned."
              (exit-code (funcall run command nil (current-buffer)))
              (raw-output (buffer-substring-no-properties 1 (point-max)))
              (output (if trim-output (s-trim raw-output) raw-output))
-             (success (cond
-                       ((null validate)
-                        t)
-                       ((or (natnump validate) (stringp validate))
-                        (equal exit-code validate))
-                       ((functionp validate)
-                        (funcall validate exit-code output))
-                       (t
-                        (eql exit-code 0)))))
+             (success (or (eq return 'both)
+                          (cond
+                           ((null validate)
+                            t)
+                           ((or (natnump validate) (stringp validate))
+                            (equal exit-code validate))
+                           ((functionp validate)
+                            (funcall validate exit-code output))
+                           (t
+                            (eql exit-code 0))))))
         (if success
             (cond
              ((eq return 'both)
