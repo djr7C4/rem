@@ -91,7 +91,7 @@
   (s-chop-suffix "/" path))
 
 (defun rem-relative-path (path dir)
-  (rem-slash (s-chop-prefix (rem-slash (f-canonical (stp-git-root dir)))
+  (rem-slash (s-chop-prefix (rem-slash (f-canonical dir))
                             (f-canonical path))))
 
 ;;; Local variables
