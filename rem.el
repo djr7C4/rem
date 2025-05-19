@@ -618,13 +618,20 @@ RETURN is \\='output, the output from COMMAND is returned. When
 it is \\='exit-code, the exit-code is returned. When it is a
 function, it is applied to the exit-code and output and the
 result is returned. When RETURN is any other value, that value is
-returned."
+returned.
+
+By default, stdout and stderr are mixed in the output. When
+NOSTDERR is non-nil, stderr is discarded instead."
   (rem-with-bash
     (with-temp-buffer
       (let* ((run (if allow-remote
                       #'rem--call-process-shell-command-no-rc
                     #'rem--call-process-shell-command-no-rc))
-             (exit-code (funcall run command nil (current-buffer)))
+             (buf (if nostderr
+                      ;; The second element is the file to send stderr to.
+                      (list (current-buffer) "/dev/null")
+                    (current-buffer)))
+             (exit-code (funcall run command nil buf))
              (raw-output (buffer-substring-no-properties 1 (point-max)))
              (output (if trim-output (s-trim raw-output) raw-output))
              (success (or (eq return 'both)
