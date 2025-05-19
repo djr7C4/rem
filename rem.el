@@ -53,8 +53,6 @@
     (clipboard-kill-ring-save (point-min) (point-max))))
 
 ;;; Files
-(defvar rem-elisp-extensions '("el" "elc"))
-
 (defun rem-dir-locals-file-names ()
   (save-match-data
     (let (files)
@@ -67,14 +65,14 @@
 
 (defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$"))
 
-(cl-defun rem-elisp-files-to-load (dir &key keep-extensions (extensions rem-elisp-extensions))
+(cl-defun rem-elisp-files-to-load (dir &key keep-extensions)
   (let ((files (-filter (lambda (path)
                           (and (f-file-p path)
                                (not (member (f-filename path) (rem-dir-locals-file-names)))))
                         (f-entries dir
                                    (lambda (path)
                                      (or (f-dir-p path)
-                                         (and (member (f-ext path) extensions)
+                                         (and (string= (f-ext path) "el")
                                               (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
                                    t))))
     (unless keep-extensions
@@ -560,6 +558,26 @@ if they wish."
 
 (def-edebug-spec rem-with-bash t)
 
+(defvar rem-shell-file-name (executable-find "bash"))
+
+(cl-defun rem--call-process-shell-command-no-rc (command &optional infile buffer display)
+  (apply #'call-process
+         (append (list rem-shell-file-name infile buffer display)
+                 ;; This makes things much faster since loading the rc file can
+                 ;; be slow.
+                 (and (string= (f-filename rem-shell-file-name) "bash")
+                      (list "--norc" "--noprofile"))
+                 (list shell-command-switch command))))
+
+(cl-defun rem--process-file-shell-command-no-rc (command &optional infile buffer display)
+  (apply #'process-file
+         (append (list rem-shell-file-name infile buffer display)
+                 ;; This makes things much faster since loading the rc file can
+                 ;; be slow.
+                 (and (string= (f-filename rem-shell-file-name) "bash")
+                      (list "--norc" "--noprofile"))
+                 (list shell-command-switch command))))
+
 (cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t) (return 'output) error)
   "Execute COMMAND and return its exit code and output as a list.
 
@@ -603,8 +621,8 @@ returned."
   (rem-with-bash
     (with-temp-buffer
       (let* ((run (if allow-remote
-                      #'process-file-shell-command
-                    #'call-process-shell-command))
+                      #'rem--call-process-shell-command-no-rc
+                    #'rem--call-process-shell-command-no-rc))
              (exit-code (funcall run command nil (current-buffer)))
              (raw-output (buffer-substring-no-properties 1 (point-max)))
              (output (if trim-output (s-trim raw-output) raw-output))
