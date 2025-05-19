@@ -560,7 +560,7 @@ if they wish."
 
 (defvar rem-shell-file-name (executable-find "bash"))
 
-(cl-defun rem--call-process-shell-command-no-rc (command &optional infile buffer display)
+(defun rem--call-process-shell-command-no-rc (command &optional infile buffer display)
   (apply #'call-process
          (append (list rem-shell-file-name infile buffer display)
                  ;; This makes things much faster since loading the rc file can
@@ -569,7 +569,7 @@ if they wish."
                       (list "--norc" "--noprofile"))
                  (list shell-command-switch command))))
 
-(cl-defun rem--process-file-shell-command-no-rc (command &optional infile buffer display)
+(defun rem--process-file-shell-command-no-rc (command &optional infile buffer display)
   (with-connection-local-variables
    (apply #'process-file
           (append (list rem-shell-file-name infile buffer display)
