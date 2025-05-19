@@ -570,15 +570,16 @@ if they wish."
                  (list shell-command-switch command))))
 
 (cl-defun rem--process-file-shell-command-no-rc (command &optional infile buffer display)
-  (apply #'process-file
-         (append (list rem-shell-file-name infile buffer display)
-                 ;; This makes things much faster since loading the rc file can
-                 ;; be slow.
-                 (and (string= (f-filename rem-shell-file-name) "bash")
-                      (list "--norc" "--noprofile"))
-                 (list shell-command-switch command))))
+  (with-connection-local-variables
+   (apply #'process-file
+          (append (list rem-shell-file-name infile buffer display)
+                  ;; This makes things much faster since loading the rc file can
+                  ;; be slow.
+                  (and (string= (f-filename rem-shell-file-name) "bash")
+                       (list "--norc" "--noprofile"))
+                  (list shell-command-switch command)))))
 
-(cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t) (return 'output) error)
+(cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t) error (return 'output) nostderr)
   "Execute COMMAND and return its exit code and output as a list.
 
 This function is similar to `call-process-shell-command' but is
