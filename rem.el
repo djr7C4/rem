@@ -550,15 +550,9 @@ if they wish."
         (push sym syms)))))
 
 ;;; Shell commands
-(defmacro rem-with-bash (&rest body)
-  "Bind `shell-file-name' to the path to bash while executing BODY."
-  (declare (indent 0))
-  `(let ((shell-file-name (executable-find "bash")))
-     ,@body))
-
-(def-edebug-spec rem-with-bash t)
-
 (defvar rem-shell-file-name (executable-find "bash"))
+
+(defvar rem-shell-command-switch "-c")
 
 (defun rem--call-process-shell-command-no-rc (command &optional infile buffer display)
   (apply #'call-process
@@ -567,7 +561,7 @@ if they wish."
                  ;; be slow.
                  (and (string= (f-filename rem-shell-file-name) "bash")
                       (list "--norc" "--noprofile"))
-                 (list shell-command-switch command))))
+                 (list rem-shell-command-switch command))))
 
 (defun rem--process-file-shell-command-no-rc (command &optional infile buffer display)
   (with-connection-local-variables
@@ -577,17 +571,32 @@ if they wish."
                   ;; be slow.
                   (and (string= (f-filename rem-shell-file-name) "bash")
                        (list "--norc" "--noprofile"))
-                  (list shell-command-switch command)))))
+                  (list rem-shell-command-switch command)))))
 
-(cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t) error (return 'output) nostderr)
+;; Here command is a list consisting of a command and its arguments.
+(defun rem--call-process (command &optional infile destination display)
+  (apply #'call-process (car command) infile destination display (cdr command)))
+
+(defun rem--process-file (command &optional infile destination display)
+  (apply #'process-file (car command) infile destination display (cdr command)))
+
+(cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t) error (return 'output) nostderr buffer)
   "Execute COMMAND and return its exit code and output as a list.
 
-This function is similar to `call-process-shell-command' but is
-more versatile and accepts several keyword arguments for
-convenience.
+This function is a combination of `call-process-shell-command',
+`process-file-shell-command', `call-process' and `process-file'
+depending on the keyword arguments passed. It is more versatile,
+supports validation and can return the exit code as well as the
+output.
 
-As with `call-process-shell-command', by default COMMAND is
-always run on the localhost. When ALLOW-REMOTE is non-nil,
+When COMMAND is a string, it is passed to `rem-shell-file-name'
+and the behavior is similar to `call-process-shell-command'. When
+it is a list, the head is treated as the command and the tail as
+the arguments to pass to it. If the head of COMMAND is not an
+absolute path, it will be resolved by calling `executable-find'.
+
+By default COMMAND is run on the localhost as with
+`call-process-shell-command'. When ALLOW-REMOTE is non-nil,
 command will be run on a remote host if `default-directory'
 points to one (as with `process-file-shell-command').
 
@@ -621,52 +630,64 @@ result is returned. When RETURN is any other value, that value is
 returned.
 
 By default, stdout and stderr are mixed in the output. When
-NOSTDERR is non-nil, stderr is discarded instead."
-  (rem-with-bash
-    (with-temp-buffer
-      (let* ((run (if allow-remote
-                      #'rem--call-process-shell-command-no-rc
-                    #'rem--call-process-shell-command-no-rc))
-             (buf (if nostderr
-                      ;; The second element is the file to send stderr to.
-                      (list (current-buffer) "/dev/null")
-                    (current-buffer)))
-             (exit-code (funcall run command nil buf))
-             (raw-output (buffer-substring-no-properties 1 (point-max)))
-             (output (if trim-output (s-trim raw-output) raw-output))
-             (success (or (eq return 'both)
-                          (cond
-                           ((null validate)
-                            t)
-                           ((or (natnump validate) (stringp validate))
-                            (equal exit-code validate))
-                           ((functionp validate)
-                            (funcall validate exit-code output))
-                           (t
-                            (eql exit-code 0))))))
-        (if success
-            (cond
-             ((eq return 'both)
-              (list exit-code output))
-             ((eq return 'exit-code)
-              exit-code)
-             ((eq return 'output)
-              output)
-             ((functionp return)
-              (funcall return exit-code output))
-             (t
-              return))
+NOSTDERR is non-nil, stderr is discarded instead.
+
+When BUFFER is non-nil, it indicates the buffer that the output
+should be sent to. In this case, the value of RETURN will be
+ignored and it will be treated as if it were \\='exit-code."
+  (when buffer
+    (setq return 'exit-code))
+  (with-temp-buffer
+    (let* ((shell (stringp command))
+           (run (cond
+                 ((and (not shell) (not allow-remote))
+                  #'rem--call-process)
+                 ((and (not shell) allow-remote)
+                  #'rem--process-file)
+                 ((and shell (not allow-remote))
+                  #'rem--call-process-shell-command-no-rc)
+                 ((and shell allow-remote)
+                  #'rem--process-file-shell-command-no-rc)))
+           (dest (if nostderr
+                     ;; The second element is the file to send stderr to.
+                     (list (or buffer (current-buffer)) "/dev/null")
+                   (or buffer (current-buffer))))
+           (exit-code (funcall run command nil dest))
+           (raw-output (buffer-substring-no-properties 1 (point-max)))
+           (output (if trim-output (s-trim raw-output) raw-output))
+           (success (or (eq return 'both)
+                        (cond
+                         ((null validate)
+                          t)
+                         ((or (natnump validate) (stringp validate))
+                          (equal exit-code validate))
+                         ((functionp validate)
+                          (funcall validate exit-code output))
+                         (t
+                          (eql exit-code 0))))))
+      (if success
           (cond
-           ((functionp error)
-            (funcall error exit-code output))
-           (error
-            (error "The command \"%s\" in \"%s\" failed with exit code %s and output \"%s\""
-                   command
-                   default-directory
-                   (if (stringp exit-code)
-                       (format "\"%s\"" exit-code)
-                     exit-code)
-                   output))))))))
+           ((eq return 'both)
+            (list exit-code output))
+           ((eq return 'exit-code)
+            exit-code)
+           ((eq return 'output)
+            output)
+           ((functionp return)
+            (funcall return exit-code output))
+           (t
+            return))
+        (cond
+         ((functionp error)
+          (funcall error exit-code output))
+         (error
+          (error "The command \"%s\" in \"%s\" failed with exit code %s and output \"%s\""
+                 command
+                 default-directory
+                 (if (stringp exit-code)
+                     (format "\"%s\"" exit-code)
+                   exit-code)
+                 output)))))))
 
 (defun rem-call-process-shell-command (command)
   (rem-run-command command :validate nil :return 'both))
