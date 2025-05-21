@@ -575,10 +575,10 @@ if they wish."
 
 ;; Here command is a list consisting of a command and its arguments.
 (defun rem--call-process (command &optional infile destination display)
-  (apply #'call-process (car command) infile destination display (cdr command)))
+  (apply #'call-process (executable-find (car command)) infile destination display (cdr command)))
 
 (defun rem--process-file (command &optional infile destination display)
-  (apply #'process-file (car command) infile destination display (cdr command)))
+  (apply #'process-file (executable-find (car command)) infile destination display (cdr command)))
 
 (cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t) error (return 'output) nostderr buffer)
   "Execute COMMAND and return its exit code and output as a list.
