@@ -554,6 +554,13 @@ if they wish."
 
 (defvar rem-shell-command-switch "-c")
 
+(defun rem-as-shell-command (command)
+  "Convert COMMAND from a list to a string that can be passed to the
+shell if necessary."
+  (if (stringp command)
+      command
+    (list (mapcar #'shell-quote-argument (cdr command)))))
+
 (defun rem--call-process-shell-command-no-rc (command &optional infile buffer display)
   (apply #'call-process
          (append (list rem-shell-file-name infile buffer display)
@@ -639,6 +646,8 @@ ignored and it will be treated as if it were \\='exit-code."
     (setq return 'exit-code))
   (with-temp-buffer
     (let* ((shell (stringp command))
+           ;; It would be easier to just use `rem-as-shell-command' and always
+           ;; use a shell but that would create extra processes.
            (run (cond
                  ((and (not shell) (not allow-remote))
                   #'rem--call-process)
@@ -682,7 +691,7 @@ ignored and it will be treated as if it were \\='exit-code."
           (funcall error exit-code output))
          (error
           (error "The command \"%s\" in \"%s\" failed with exit code %s and output \"%s\""
-                 command
+                 (rem-as-shell-command command)
                  default-directory
                  (if (stringp exit-code)
                      (format "\"%s\"" exit-code)
