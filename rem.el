@@ -559,7 +559,7 @@ if they wish."
 shell if necessary."
   (if (stringp command)
       command
-    (list (mapcar #'shell-quote-argument (cdr command)))))
+    (s-join " " (cons (car command) (mapcar #'shell-quote-argument (cdr command))))))
 
 (defun rem--call-process-shell-command-no-rc (command &optional infile buffer display)
   (apply #'call-process
@@ -587,7 +587,7 @@ shell if necessary."
 (defun rem--process-file (command &optional infile destination display)
   (apply #'process-file (executable-find (car command)) infile destination display (cdr command)))
 
-(cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t) error (return 'output) nostderr buffer)
+(cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t validate-supplied-p) error (return 'output return-supplied-p) nostderr buffer)
   "Execute COMMAND and return its exit code and output as a list.
 
 This function is a combination of `call-process-shell-command',
@@ -621,29 +621,33 @@ is any other non-nil value, validation succeeds if the exit code
 is non-zero. When VALIDATE is nil, validation always succeeds.
 
 When validation fails, the return value is determined by ERROR.
-When ERROR is non-nil, an error is signaled instead of returning
-nil. If it is a function, the function is applied to the exit
-code and output and the result is returned. ERROR is allowed to
-signal an error. When ERROR is nil, nil is returned.
+If it is a function, the function is applied to the exit code and
+output and the result is returned. ERROR is allowed to signal an
+error. When ERROR is nil, nil is returned. Otherwise, when ERROR
+is non-nil, an error is signaled instead of returning nil.
 
 When validation succeeds, the return value is determined by
 RETURN. If RETURN is \\='both, validation is skipped and a list
 of the form (EXIT-CODE OUTPUT) is returned. EXIT-CODE can be
 either a numeric exit code or a string describing a signal. When
 RETURN is \\='output, the output from COMMAND is returned. When
-it is \\='exit-code, the exit-code is returned. When it is a
-function, it is applied to the exit-code and output and the
-result is returned. When RETURN is any other value, that value is
-returned.
+it is \\='exit-code, the exit-code is returned. Validation is
+skipped in this case unless VALIDATE was passed explicitly. When
+it is a function, it is applied to the exit-code and output and
+the result is returned. When RETURN is any other value, that
+value is returned.
 
 By default, stdout and stderr are mixed in the output. When
 NOSTDERR is non-nil, stderr is discarded instead.
 
 When BUFFER is non-nil, it indicates the buffer that the output
-should be sent to. In this case, the value of RETURN will be
-ignored and it will be treated as if it were \\='exit-code."
-  (when buffer
+should be sent to. In this case, the default value of RETURN will
+be ignored and it will be treated as if it were \\='exit-code
+unless RETURN was passed explicitly."
+  (when (and buffer (not return-supplied-p))
     (setq return 'exit-code))
+  (when (and (eq return 'exit-code) (not validate-supplied-p))
+    (setq validate nil))
   (with-temp-buffer
     (let* ((shell (stringp command))
            ;; It would be easier to just use `rem-as-shell-command' and always
