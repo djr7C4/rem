@@ -144,18 +144,14 @@ comparable using `equal'."
       (unintern var))))
 
 ;;; Trees
-(cl-defun rem-tree-find-if (pred tree &key (key (lambda (x) x)))
+(defun rem-tree-find-if (pred tree)
   "Find all subtrees in TREE satisfying PRED."
   (let (matches)
     (-tree-map (lambda (tr)
-                 (when (funcall pred (funcall key tr))
+                 (when (funcall pred key)
                    (push tr matches)))
                tree)
     matches))
-
-(defun rem-path-length (path)
-  (setq path (f-canonical path))
-  (length (f-split path)))
 
 ;;; Movement and positions
 (defun rem-goto-column (column)
