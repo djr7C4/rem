@@ -157,7 +157,7 @@ comparable using `equal'."
   "Find all subtrees in TREE satisfying PRED."
   (let (matches)
     (-tree-map (lambda (tr)
-                 (when (funcall pred key)
+                 (when (funcall pred tr)
                    (push tr matches)))
                tree)
     matches))
