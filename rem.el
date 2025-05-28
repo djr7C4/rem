@@ -143,6 +143,15 @@ comparable using `equal'."
           (delete-file-local-variable-prop-line var))
       (unintern var))))
 
+;;; Quotes
+(defun rem-quoted-p (form)
+  "Determine if form is a quoted form."
+  (eq (car-safe form) 'quote))
+
+(defun rem-sharp-quoted-p (form)
+  "Determine if form is a quoted form."
+  (eq (car-safe form) 'function))
+
 ;;; Trees
 (defun rem-tree-find-if (pred tree)
   "Find all subtrees in TREE satisfying PRED."
