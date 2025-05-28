@@ -106,23 +106,25 @@ comparable using `equal'."
                                    t))))
     (setq files (cl-remove-duplicates files :test #'equal))))
 
-(defun rem-elisp-dependencies (filename)
+(defun rem-elisp-dependencies (path)
   (let (code dependencies eof)
     (with-temp-buffer
-      (insert-file-contents filename)
+      (insert-file-contents path)
       (while (not eof)
         (condition-case nil
             (push (read (current-buffer)) code)
           (end-of-file (setq eof t)))))
     (setq code (reverse code))
     (rem-subtree-map (lambda (subtree)
-                       (and (listp subtree)
-                            (>= (length subtree) 2)
+                       (and (consp subtree)
+                            (cdr subtree)
+                            (listp (cdr subtree))
                             (db (fun arg &rest _)
                                 subtree
                               (or (and (eq fun 'require)
-                                       (listp arg)
-                                       (= (length arg) 2)
+                                       (consp arg)
+                                       (cdr arg)
+                                       (listp (cdr arg))
                                        (eq (car arg) 'quote)
                                        (symbolp (cadr arg))
                                        (push (cadr arg) dependencies))
@@ -131,6 +133,27 @@ comparable using `equal'."
                                        (push (intern (f-filename arg)) dependencies))))))
                      code)
     (reverse dependencies)))
+
+(defun rem-elisp-sort-dependencies (paths)
+  "Sort the PATHS to elisp files in the order that they should be
+loaded to ensure that each file is loaded after those it depends
+on."
+  (unless (= (length (-uniq (mapcar (-compose #'f-no-ext #'f-filename) paths)))
+             (length paths))
+    (error "The filename components are not unique: sorting is not possible"))
+  (let* ((orig-paths (map-into (mapcar (lambda (path)
+                                         (cons (f-no-ext (f-filename path)) path))
+                                       paths)
+                               (list 'hash-table :test #'equal :size (length paths))))
+         (dependencies (mapcar (lambda (path)
+                                 (->> path
+                                      rem-elisp-dependencies
+                                      (mapcar (lambda (dependency)
+                                                (gethash (symbol-name dependency) orig-paths)))
+                                      (-filter #'identity)
+                                      (cons path)))
+                               paths)))
+    (rem-topological-sort paths dependencies)))
 
 ;;; Files
 (defun rem-dir-locals-file-names ()
