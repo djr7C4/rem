@@ -750,6 +750,11 @@ unless RETURN was passed explicitly."
 ;;; Email
 (defvar rem-email-address-regexp "[a-zA-Z0-9_!#$%&'*+-/=?]+@[a-zA-Z0-9.-]+")
 
+;;; Paths
+(defun rem-path-length (path)
+  (setq path (f-canonical path))
+  (length (f-split path)))
+
 ;;; URLs
 ;; Based on the erc-button-url-regexp variable.
 (defvar rem-strict-url-regexp "\\(www\\.\\|\\(s?https?\\|ftp\\|file\\|gopher\\|news\\|telnet\\|wais\\|mailto\\):\\)\\(//[-a-zA-Z0-9_.]+:[0-9]*\\)?[-a-zA-Z0-9_=!?#$@~`%&*+\\/:;.,()]+[-a-zA-Z0-9_=#$@~`%&*+\\/()]"
