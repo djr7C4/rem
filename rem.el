@@ -19,10 +19,49 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'anaphora)
+(require 'cl-lib)
 (require 'dash)
 (require 'f)
+(require 'map)
 (require 'rem-abbrev)
 (require 'url-parse)
+
+;;; Algorithms
+(defun rem-topological-sort (nodes edges)
+  "Perform a topological sort on the list NODES and return the
+result. EDGES should be a mapping that maps each node to a list
+of the nodes that it is connected to. Each node must be
+comparable using `equal'."
+  (let ((edges (map-into edges (list 'hash-table :test #'equal :size (map-length edges))))
+        (in-degrees (make-hash-table :test #'equal :size (map-length nodes)))
+        ;; This is a list of nodes with in-degrees of 0 (i.e. they have no
+        ;; incoming edges).
+        open
+        sorted)
+    ;; Compute the in-degree of each node.
+    (dolist (node nodes)
+      (puthash node 0 in-degrees))
+    (map-do (lambda (node adjacent)
+              (dolist (node2 adjacent)
+                (cl-incf (gethash node2 in-degrees))))
+            edges)
+    ;; Initialize the open list.
+    (map-do (lambda (node in-degree)
+              (when (= in-degree 0)
+                (push node open)))
+            in-degrees)
+    (while open
+      (let* ((node (pop open))
+             (adjacent (gethash node edges)))
+        (push node sorted)
+        ;; Since we removed node from the graph, update the in-degree of each
+        ;; node that it connected to.
+        (dolist (node2 adjacent)
+          (when (= (cl-decf (gethash node2 in-degrees)) 0)
+            (push node2 open)))))
+    (unless (= (length sorted) (length nodes))
+      (error "Failed to topologically sort the graph because it is not acyclic"))
+    (reverse sorted)))
 
 ;;; Buffers
 (defun rem-buffer-contents (&optional buffer)
