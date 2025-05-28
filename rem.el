@@ -91,7 +91,23 @@ comparable using `equal'."
     (insert string)
     (clipboard-kill-ring-save (point-min) (point-max))))
 
-;;; Elisp parsing
+;;; Elisp
+(defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$"))
+
+(cl-defun rem-elisp-files-to-load (dir &key keep-extensions)
+  (let ((files (-filter (lambda (path)
+                          (and (f-file-p path)
+                               (not (member (f-filename path) (rem-dir-locals-file-names)))))
+                        (f-entries dir
+                                   (lambda (path)
+                                     (or (f-dir-p path)
+                                         (and (string= (f-ext path) "el")
+                                              (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
+                                   t))))
+    (unless keep-extensions
+      (setq files (mapcar #'f-no-ext files)))
+    (setq files (cl-remove-duplicates files :test #'equal))))
+
 (defun rem-elisp-dependencies (filename)
   (let (code dependencies eof)
     (with-temp-buffer
@@ -128,22 +144,6 @@ comparable using `equal'."
       ;; Ensure that `dir-locals-file' is first in the list.
       (push dir-locals-file files)
       files)))
-
-(defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$"))
-
-(cl-defun rem-elisp-files-to-load (dir &key keep-extensions)
-  (let ((files (-filter (lambda (path)
-                          (and (f-file-p path)
-                               (not (member (f-filename path) (rem-dir-locals-file-names)))))
-                        (f-entries dir
-                                   (lambda (path)
-                                     (or (f-dir-p path)
-                                         (and (string= (f-ext path) "el")
-                                              (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
-                                   t))))
-    (unless keep-extensions
-      (setq files (mapcar #'f-no-ext files)))
-    (setq files (cl-remove-duplicates files :test #'equal))))
 
 (defun rem-slash (path)
   "Unconditionally add a slash to PATH. This is different from
