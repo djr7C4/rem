@@ -94,7 +94,7 @@ comparable using `equal'."
 ;;; Elisp
 (defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$"))
 
-(cl-defun rem-elisp-files-to-load (dir &key keep-extensions)
+(defun rem-elisp-files-to-load (dir)
   (let ((files (-filter (lambda (path)
                           (and (f-file-p path)
                                (not (member (f-filename path) (rem-dir-locals-file-names)))))
@@ -104,8 +104,6 @@ comparable using `equal'."
                                          (and (string= (f-ext path) "el")
                                               (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
                                    t))))
-    (unless keep-extensions
-      (setq files (mapcar #'f-no-ext files)))
     (setq files (cl-remove-duplicates files :test #'equal))))
 
 (defun rem-elisp-dependencies (filename)
