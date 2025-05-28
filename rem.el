@@ -156,11 +156,14 @@ comparable using `equal'."
 (defun rem-tree-find-if (pred tree)
   "Find all subtrees in TREE satisfying PRED."
   (let (matches)
-    (-tree-map (lambda (tr)
-                 (when (funcall pred tr)
-                   (push tr matches)))
-               tree)
-    matches))
+    (cl-labels ((rec (subtree)
+                  (when (funcall pred subtree)
+                    (push subtree matches))
+                  (when (consp subtree)
+                    (rec (car subtree))
+                    (rec (cdr subtree)))))
+      (rec tree)
+      (reverse matches))))
 
 ;;; Movement and positions
 (defun rem-goto-column (column)
