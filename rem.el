@@ -91,6 +91,33 @@ comparable using `equal'."
     (insert string)
     (clipboard-kill-ring-save (point-min) (point-max))))
 
+;;; Elisp parsing
+(defun rem-elisp-dependencies (filename)
+  (let (code dependencies eof)
+    (with-temp-buffer
+      (insert-file-contents filename)
+      (while (not eof)
+        (condition-case nil
+            (push (read (current-buffer)) code)
+          (end-of-file (setq eof t)))))
+    (setq code (reverse code))
+    (rem-subtree-map (lambda (subtree)
+                       (and (listp subtree)
+                            (>= (length subtree) 2)
+                            (db (fun arg &rest _)
+                                subtree
+                              (or (and (eq fun 'require)
+                                       (listp arg)
+                                       (= (length arg) 2)
+                                       (eq (car arg) 'quote)
+                                       (symbolp (cadr arg))
+                                       (push (cadr arg) dependencies))
+                                  (and (eq fun 'load)
+                                       (stringp arg)
+                                       (push (intern (f-filename arg)) dependencies))))))
+                     code)
+    (reverse dependencies)))
+
 ;;; Files
 (defun rem-dir-locals-file-names ()
   (save-match-data
@@ -153,17 +180,23 @@ comparable using `equal'."
   (eq (car-safe form) 'function))
 
 ;;; Trees
+(defun rem-subtree-map (fun tree)
+  "Apply FUN to each subtree of TREE."
+  (cl-labels ((rec (subtree)
+                (funcall fun subtree)
+                (when (consp subtree)
+                  (rec (car subtree))
+                  (rec (cdr subtree)))))
+    (rec tree)))
+
 (defun rem-tree-find-if (pred tree)
   "Find all subtrees in TREE satisfying PRED."
   (let (matches)
-    (cl-labels ((rec (subtree)
-                  (when (funcall pred subtree)
-                    (push subtree matches))
-                  (when (consp subtree)
-                    (rec (car subtree))
-                    (rec (cdr subtree)))))
-      (rec tree)
-      (reverse matches))))
+    (rem-subtree-map (lambda (subtree)
+                       (when (funcall pred subtree)
+                         (push subtree matches)))
+                     tree)
+    (reverse matches)))
 
 ;;; Movement and positions
 (defun rem-goto-column (column)
