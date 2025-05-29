@@ -135,9 +135,9 @@ comparable using `equal'."
     (reverse dependencies)))
 
 (defun rem-elisp-sort-dependencies (paths)
-  "Sort the PATHS to elisp files in the order that they should be
-loaded to ensure that each file is loaded after those it depends
-on."
+  "Sort the PATHS to elisp files by load order.
+
+This ensures that each file is loaded after those it depends on."
   (unless (= (length (-uniq (mapcar (-compose #'f-no-ext #'f-filename) paths)))
              (length paths))
     (error "The filename components are not unique: sorting is not possible"))
@@ -167,8 +167,10 @@ on."
       files)))
 
 (defun rem-slash (path)
-  "Unconditionally add a slash to PATH. This is different from
-`f-slash' which only adds a slash if PATH points to a directory."
+  "Unconditionally add a slash to PATH.
+
+This is different from `f-slash' which only adds a slash if PATH
+points to a directory."
   (file-name-as-directory path))
 
 (defun rem-no-slash (path)
@@ -181,7 +183,7 @@ on."
 
 ;;; Local variables
 (defun rem-ensure-prop-line ()
-  "Ensure that there is a (possibly empty) prop line and move point into it."
+  "Ensure that there is a prop line and move point into it."
   ;; `delete-file-local-variable-prop-line' requires an interned symbol so we
   ;; intern a gensym and then unintern it later.
   (let ((var (intern (symbol-name (gensym)))))
@@ -231,10 +233,12 @@ on."
   (forward-line (1- line)))
 
 (defun rem-goto-line-column (line &optional column no-error)
-  "Go to LINE and COLUMN in the current buffer. If NO-ERROR is
-non-nil, go to the closest line and column instead of signaling
-an error. Return a list containing \\='line if moving to LINE was
-successful and \\'column if moving to COLUMN as successful."
+  "Go to LINE and COLUMN in the current buffer.
+
+If NO-ERROR is non-nil, go to the closest line and column instead
+of signaling an error. Return a list containing \\='line if
+moving to LINE was successful and \\'column if moving to COLUMN
+as successful."
   (setq column (or column 0))
   (let (success)
     (if (<= line (count-lines (point-min) (point-max)))
@@ -345,7 +349,9 @@ directory."
 
 ;;; Strings
 (defun rem-copy-string (string)
-  "Make a copy of the contents of STRING. Text properties are ignored."
+  "Make a copy of the contents of STRING.
+
+Text properties are ignored."
   (and string
        (stringp string)
        (let ((string2 (concat string)))
@@ -370,10 +376,11 @@ directory."
             (car (last strings))))))
 
 (defun rem-empty-nil (string &optional fun)
-  "If STRING is nil or empty, return nil. Otherwise, return STRING.
-If FUN is non-nil, apply it to string before returning it. This
-function does not change the global state (including the match
-data)."
+  "If STRING is nil or empty, return nil.
+
+Otherwise, return STRING. If FUN is non-nil, apply it to string
+before returning it. This function does not change the global
+state (including the match data)."
   (save-match-data
     (unless (or (null string) (string= string ""))
       (if fun
@@ -382,8 +389,9 @@ data)."
 
 ;;; Looking back
 (defun rem-looking-back-p (regexp &optional limit greedy)
-  "Check if text before point matches REGEXP, without changing match
-data. LIMIT and GREEDY have the same meaning as in
+  "Check if text before point matches REGEXP.
+
+Match data is saved. LIMIT and GREEDY have the same meaning as in
 `looking-back'."
   (save-match-data
     (looking-back regexp limit greedy)))
@@ -447,6 +455,7 @@ data. LIMIT and GREEDY have the same meaning as in
 ;;; Archives
 (defun rem-extract-archive (path &optional subdir)
   "Extract the archive located at PATH to its containing directory.
+
 When SUBDIR is non-nil, files are always extracted to a directory
 even if the archive is a single compressed file."
   (let ((dir (f-dirname path))
@@ -511,12 +520,14 @@ even if the archive is a single compressed file."
                                 override))
 
 (cl-defun rem-comp-read (prompt collection &key predicate require-match initial-input history default sort-fun metadata override-metadata keymap multiple)
-  "Most of the arguments are the same as for `completing-read' but are keyword
-arguments instead. history must be a symbol. INITIAL-INPUT should
-not be used as it is better to use DEFAULT so that the user can
-pull in the default value with M-n if they wish. See
-`completing-read' for more details on why INITIAL-INPUT is
-considered obsolete.
+  "Perform completing read with keyword arguments and some extensions.
+
+Most of the arguments are the same as for `completing-read' but
+are keyword arguments instead. HISTORY must be a symbol.
+INITIAL-INPUT should not be used as it is better to use DEFAULT
+so that the user can pull in the default value with M-n if they
+wish. See `completing-read' for more details on why INITIAL-INPUT
+is considered obsolete.
 
 INHERIT-INPUT-METHOD is not supported because several frameworks
 do not support it. If SORT-FUN is non-nil, it will be used to
@@ -631,16 +642,16 @@ facilities for it or `completing-read-multiple'."
                         default)))))))))
 
 (cl-defun rem-read-from-mini (prompt &key initial-contents keymap read history default inherit-input-method)
-  "This is a convenience wrapper for `read-from-minibuffer' that
-allows keyword arguments. As in `read-from-minibuffer',
-INITIAL-CONTENTS should not be used as it is better to use
-DEFAULT so that the user can pull in the default value with M-n
-if they wish."
+  "This is `read-from-minibuffer' with keyword arguments.
+
+As in `read-from-minibuffer', INITIAL-CONTENTS should not be used
+as it is better to use DEFAULT so that the user can pull in the
+default value with M-n if they wish."
   (read-from-minibuffer prompt initial-contents keymap read history default inherit-input-method))
 
 ;;; Symbols
 (defun rem-find-symbols (start &optional end)
-  "Return all symbols whose names start with START and optionally end with END."
+  "Return all symbols starting with START and ending with END."
   (when (not end)
     (setq end ""))
   (let (syms name)
@@ -656,8 +667,10 @@ if they wish."
 (defvar rem-shell-command-switch "-c")
 
 (defun rem-as-shell-command (command)
-  "Convert COMMAND from a list to a string that can be passed to the
-shell if necessary."
+  "Convert COMMAND from a list to a shell command string.
+
+If COMMAND is already a string then it is returned with no
+changed."
   (if (stringp command)
       command
     (s-join " " (cons (car command) (mapcar #'shell-quote-argument (cdr command))))))
