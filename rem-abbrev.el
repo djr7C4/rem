@@ -15,14 +15,13 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (require 'cl-lib)
-(require 'mmt)
 (require 'pcase)
 
 (defalias 'db 'cl-destructuring-bind)
 (defalias 'mvb 'cl-multiple-value-bind)
 (defalias 'mvs 'cl-multiple-value-setq)
-(defalias 'with-gensyms 'mmt-with-gensyms)
-(defalias 'once-only 'mmt-once-only)
+(defalias 'with-gensyms 'cl-with-gensyms)
+(defalias 'once-only 'cl-once-only)
 (defalias 'dflet 'noflet)
 (defalias 'plet 'pcase-let)
 (defalias 'plet* 'pcase-let*)
