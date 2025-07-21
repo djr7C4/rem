@@ -2,8 +2,9 @@
 ;; Copyright (C) 2025 David J. Rosenbaum <djr7c4@gmail.com>
 
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
-;; Keywords: TODO
+;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
+;; Version: 0.5.0
 ;; Package-Requires: ()
 ;;
 ;; This program is free software: you can redistribute it and/or modify
