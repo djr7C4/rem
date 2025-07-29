@@ -824,7 +824,7 @@ unless RETURN was passed explicitly."
   (rem-run-command command :allow-remote t :validate nil :return 'both))
 
 ;;; Email
-(defvar rem-email-address-regexp "[a-zA-Z0-9_!#$%&'*+-/=?]+@[a-zA-Z0-9.-]+")
+(defvar rem-email-address-regexp "[a-zA-Z0-9_!#$%&'*+-/=?]+@[a-zA-Z0-9.-]+\\.[a-zA-Z0-9.-]+")
 
 ;;; Paths
 (defun rem-path-length (path)
