@@ -30,6 +30,7 @@
 (defalias 'plambda 'pcase-lambda)
 (defalias 'pdefmacro 'pcase-defmacro)
 (defalias 'epcase 'pcase-exhaustive)
+(defalias 'fn 'rem-fn)
 
 (provide 'rem-abbrev)
 ;;; rem-abbrev.el ends here

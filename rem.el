@@ -23,6 +23,7 @@
 (require 'cl-lib)
 (require 'dash)
 (require 'f)
+(require 'llama)
 (require 'map)
 (require 'rem-abbrev)
 (require 'url-parse)
@@ -181,6 +182,10 @@ points to a directory."
 (defun rem-relative-path (path dir)
   (rem-slash (s-chop-prefix (rem-slash (f-canonical dir))
                             (f-canonical path))))
+
+;;; Lambda
+(defmacro rem-fn (&rest forms)
+  `(llama progn ,@forms))
 
 ;;; Local variables
 (defun rem-ensure-prop-line ()
