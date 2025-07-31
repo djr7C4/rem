@@ -14,6 +14,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+(require 'dash)
 (require 'cl-lib)
 (require 'pcase)
 
@@ -31,6 +32,14 @@
 (defalias 'pdefmacro 'pcase-defmacro)
 (defalias 'epcase 'pcase-exhaustive)
 (defalias 'fn 'rem-fn)
+
+(defmacro rem-define-fn-aliases ()
+  `(progn
+     ,@(mapcar (lambda (k)
+                 `(defalias ',(intern (format "fn%d" k)) ',(intern (format "rem-fn%d" k))))
+               (-iota 10 1))))
+
+(rem-define-fn-aliases)
 
 (provide 'rem-abbrev)
 ;;; rem-abbrev.el ends here

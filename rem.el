@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.5.0
+;; Version: 0.6.0
 ;; Package-Requires: ()
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -183,9 +183,43 @@ points to a directory."
   (rem-slash (s-chop-prefix (rem-slash (f-canonical dir))
                             (f-canonical path))))
 
-;;; Lambda
-(defmacro rem-fn (&rest forms)
-  `(llama progn ,@forms))
+;;; Functions
+(defmacro rem-fn (&rest body)
+  (declare (indent 0))
+  `(llama progn ,@body))
+
+(defvar rem-fn-vars '(%1 %2 %3 %4 %5 %6 %7 %8 %9 %10))
+
+(defmacro rem-define-fn (n)
+  (cl-assert (>= n 2))
+  `(defmacro ,(intern (format "rem-fn%d" n)) (&rest body)
+     (declare (indent 0))
+     `(rem-fn (progn ,@',(-take n rem-fn-vars)) ,@body)))
+
+(defmacro rem-fn1 (&rest body)
+  (declare (indent 0))
+  `(rem-fn (let ((% %1))
+             ,@body)))
+
+(defmacro rem-define-fns ()
+  `(progn ,@(mapcar (lambda (k) `(rem-define-fn ,k)) (-iota 9 2))))
+
+(rem-define-fns)
+
+(defun rem-maybe-args (&rest args)
+  (unless (evenp (length args))
+    (error "An even number of arguments is required"))
+  (let (args2 x include-x-p)
+    (while args
+      (setq include-x-p (car args)
+            x (cadr args)
+            args (cddr args))
+      (when include-x-p
+        (push x args2)))
+    (reverse args2)))
+
+(defun rem-maybe-kwd-args (&rest args)
+  (apply #'append (apply #'rem-maybe-args args)))
 
 ;;; Local variables
 (defun rem-ensure-prop-line ()
