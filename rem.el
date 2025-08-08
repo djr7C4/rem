@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.6.0
+;; Version: 0.7.0
 ;; Package-Requires: ()
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -96,16 +96,24 @@ comparable using `equal'."
 ;;; Elisp
 (defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$"))
 
-(defun rem-elisp-files-to-load (dir)
-  (let ((files (-filter (lambda (path)
-                          (and (f-file-p path)
-                               (not (member (f-filename path) (rem-dir-locals-file-names)))))
-                        (f-entries dir
-                                   (lambda (path)
-                                     (or (f-dir-p path)
-                                         (and (string= (f-ext path) "el")
-                                              (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
-                                   t))))
+(defun rem-elisp-files-to-load (dir &optional compressed)
+  (let* ((extensions (if compressed
+                         '("el" "el.gz")
+                       '("el")))
+         (files (-filter (lambda (path)
+                           (and (f-file-p path)
+                                (not (member (f-filename path) (rem-dir-locals-file-names)))))
+                         (f-entries dir
+                                    (lambda (path)
+                                      (or (f-dir-p path)
+                                          ;; Using `f-ext' doesn't work since
+                                          ;; for .el.gz files it returns "gz"
+                                          ;; instead of "el.gz".
+                                          (and (cl-some (lambda (extension)
+                                                          (s-ends-with-p extension path))
+                                                        extensions)
+                                               (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
+                                    t))))
     (setq files (cl-remove-duplicates files :test #'equal))))
 
 (defun rem-elisp-dependencies (path)
@@ -121,7 +129,7 @@ comparable using `equal'."
                        (and (consp subtree)
                             (cdr subtree)
                             (listp (cdr subtree))
-                            (db (fun arg &rest _)
+                            (cl-destructuring-bind (fun arg &rest _)
                                 subtree
                               (or (and (eq fun 'require)
                                        (consp arg)
@@ -158,6 +166,15 @@ This ensures that each file is loaded after those it depends on."
     (rem-topological-sort paths dependencies)))
 
 ;;; Files
+(defun rem-no-ext (path)
+  "Remove all extensions from PATH. This is different from
+`f-no-ext' which only removes the last one."
+  (let (old-path)
+    (while (not (equal path old-path))
+      (setq old-path path
+            path (f-no-ext path)))
+    path))
+
 (defun rem-dir-locals-file-names ()
   (save-match-data
     (let (files)
@@ -209,17 +226,24 @@ points to a directory."
 (defun rem-maybe-args (&rest args)
   (unless (evenp (length args))
     (error "An even number of arguments is required"))
-  (let (args2 x include-x-p)
+  (let (args2 include-x-p x)
     (while args
-      (setq include-x-p (car args)
-            x (cadr args)
+      (setq x (car args)
+            include-x-p (cadr args)
             args (cddr args))
       (when include-x-p
         (push x args2)))
     (reverse args2)))
 
-(defun rem-maybe-kwd-args (&rest args)
-  (apply #'append (apply #'rem-maybe-args args)))
+(defmacro rem-maybe-kwd-args (&rest vars)
+  (unless (evenp (length vars))
+    (error "An even number of variables is required"))
+  `(append ,@(mapcar (lambda (pair)
+                       (cl-destructuring-bind (x include-x-p)
+                           pair
+                         `(when ,include-x-p
+                            (list ,(intern (format ":%s" (symbol-name x))) ,x))))
+                     (-partition 2 vars))))
 
 ;;; Local variables
 (defun rem-ensure-prop-line ()
