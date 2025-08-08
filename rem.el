@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.7.0
+;; Version: 0.7.1
 ;; Package-Requires: ()
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -98,8 +98,8 @@ comparable using `equal'."
 
 (defun rem-elisp-files-to-load (dir &optional compressed)
   (let* ((extensions (if compressed
-                         '("el" "el.gz")
-                       '("el")))
+                         '(".el" ".el.gz")
+                       '(".el")))
          (files (-filter (lambda (path)
                            (and (f-file-p path)
                                 (not (member (f-filename path) (rem-dir-locals-file-names)))))
