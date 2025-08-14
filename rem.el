@@ -5,7 +5,7 @@
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
 ;; Version: 0.7.3
-;; Package-Requires: ()
+;; Package-Requires: (llama "1.0.0")
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of version 3 of the GNU General Public License, as
