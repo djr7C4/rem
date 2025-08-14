@@ -224,7 +224,7 @@ points to a directory."
 (rem-define-fns)
 
 (defun rem-maybe-args (&rest args)
-  (unless (evenp (length args))
+  (unless (cl-evenp (length args))
     (error "An even number of arguments is required"))
   (let (args2 include-x-p x)
     (while args
@@ -236,7 +236,7 @@ points to a directory."
     (reverse args2)))
 
 (defmacro rem-maybe-kwd-args (&rest vars)
-  (unless (evenp (length vars))
+  (unless (cl-evenp (length vars))
     (error "An even number of variables is required"))
   `(append ,@(mapcar (lambda (pair)
                        (cl-destructuring-bind (x include-x-p)
