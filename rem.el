@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.7.5
+;; Version: 0.7.6
 ;; Package-Requires: (llama "1.0.0")
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -94,7 +94,7 @@ comparable using `equal'."
     (clipboard-kill-ring-save (point-min) (point-max))))
 
 ;;; Elisp
-(defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$" "\\(^\\|/\\).eask/"))
+(defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$" "\\(^\\|/\\).cask/" "\\(^\\|/\\).eask/"))
 
 (defun rem-elisp-files-to-load (dir &optional compressed)
   (let* ((extensions (if compressed
