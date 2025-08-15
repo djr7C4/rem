@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.7.6
+;; Version: 0.7.7
 ;; Package-Requires: (llama "1.0.0")
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -96,7 +96,7 @@ comparable using `equal'."
 ;;; Elisp
 (defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$" "\\(^\\|/\\).cask/" "\\(^\\|/\\).eask/"))
 
-(defun rem-elisp-files-to-load (dir &optional compressed)
+(cl-defun rem-elisp-files-to-load (dir &key compressed recursive)
   (let* ((extensions (if compressed
                          '(".el" ".el.gz")
                        '(".el")))
@@ -113,7 +113,7 @@ comparable using `equal'."
                                                           (s-ends-with-p extension path))
                                                         extensions)
                                                (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
-                                    t))))
+                                    recursive))))
     (setq files (cl-remove-duplicates files :test #'equal))))
 
 (defun rem-elisp-dependencies (path)
