@@ -43,7 +43,7 @@ comparable using `equal'."
     ;; Compute the in-degree of each node.
     (dolist (node nodes)
       (puthash node 0 in-degrees))
-    (map-do (lambda (node adjacent)
+    (map-do (lambda (_node adjacent)
               (dolist (node2 adjacent)
                 (cl-incf (gethash node2 in-degrees))))
             edges)
@@ -129,7 +129,7 @@ comparable using `equal'."
                        (and (consp subtree)
                             (cdr subtree)
                             (listp (cdr subtree))
-                            (cl-destructuring-bind (fun arg &rest _)
+                            (cl-destructuring-bind (fun arg &rest args)
                                 subtree
                               (or (and (eq fun 'require)
                                        (consp arg)
@@ -205,7 +205,8 @@ points to a directory."
   (declare (indent 0))
   `(llama progn ,@body))
 
-(defvar rem-fn-vars '(%1 %2 %3 %4 %5 %6 %7 %8 %9 %10))
+(cl-eval-when (compile load eval)
+  (defvar rem-fn-vars '(%1 %2 %3 %4 %5 %6 %7 %8 %9 %10)))
 
 (defmacro rem-define-fn (n)
   (cl-assert (>= n 2))
@@ -255,7 +256,7 @@ points to a directory."
         (progn
           (add-file-local-variable-prop-line var 'val)
           (delete-file-local-variable-prop-line var))
-      (unintern var))))
+      (unintern var nil))))
 
 ;;; Quotes
 (defun rem-quoted-p (form)
