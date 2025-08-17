@@ -13,4 +13,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 * REM (Random Elisp Modules)
-REM is an assortment of generic utilities that are used in my other packages. They are available here to avoid duplication.
+REM is an assortment of generic utilities that are used in my other packages.
+They are available here to avoid duplication. The API may change as needed.
