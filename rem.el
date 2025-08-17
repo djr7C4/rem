@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.7.7
+;; Version: 0.7.8
 ;; Package-Requires: (llama "1.0.0")
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -166,6 +166,10 @@ This ensures that each file is loaded after those it depends on."
     (rem-topological-sort paths dependencies)))
 
 ;;; Files
+(defun rem-ancestor-of-inclusive-p (path path2)
+  (or (f-same-p path path2)
+      (f-ancestor-of-p path path2)))
+
 (defun rem-no-ext (path)
   "Remove all extensions from PATH. This is different from
 `f-no-ext' which only removes the last one."
