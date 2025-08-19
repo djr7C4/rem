@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.7.8
+;; Version: 0.7.9
 ;; Package-Requires: ((llama "1.0.0"))
 ;;
 ;; This program is free software: you can redistribute it and/or modify
