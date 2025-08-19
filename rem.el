@@ -41,10 +41,10 @@ comparable using `equal'."
         open
         sorted)
     ;; Compute the in-degree of each node.
-    (dolist (node nodes)
+    (cl-dolist (node nodes)
       (puthash node 0 in-degrees))
     (map-do (lambda (_node adjacent)
-              (dolist (node2 adjacent)
+              (cl-dolist (node2 adjacent)
                 (cl-incf (gethash node2 in-degrees))))
             edges)
     ;; Initialize the open list.
@@ -58,7 +58,7 @@ comparable using `equal'."
         (push node sorted)
         ;; Since we removed node from the graph, update the in-degree of each
         ;; node that it connected to.
-        (dolist (node2 adjacent)
+        (cl-dolist (node2 adjacent)
           (when (= (cl-decf (gethash node2 in-degrees)) 0)
             (push node2 open)))))
     (unless (= (length sorted) (length nodes))
@@ -493,8 +493,8 @@ Match data is saved. LIMIT and GREEDY have the same meaning as in
   "Apply FUN to setup BINDINGS in each of the KEYMAPS."
   (when (keymapp keymaps)
     (setq keymaps (list keymaps)))
-  (dolist (keymap keymaps)
-    (dolist (binding bindings)
+  (cl-dolist (keymap keymaps)
+    (cl-dolist (binding bindings)
       (funcall fun keymap (rem-maybe-kbd (car binding)) (cdr binding)))))
 
 (defun rem-define-keys (keymaps bindings)
@@ -664,7 +664,7 @@ facilities for it or `completing-read-multiple'."
           ;;                  (setq indexes (make-hash-table))
           ;;                  (let ((k 0)
           ;;                        (sorted-candidates (funcall sort-fun ivy--all-candidates)))
-          ;;                    (dolist (candidate sorted-candidates)
+          ;;                    (cl-dolist (candidate sorted-candidates)
           ;;                      (setf (gethash candidate indexes) k)
           ;;                      (cl-incf k))))
           ;;                (when (consp x)
