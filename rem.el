@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.7.9
+;; Version: 0.7.10
 ;; Package-Requires: ((llama "1.0.0"))
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -249,6 +249,10 @@ points to a directory."
                          `(when ,include-x-p
                             (list ,(intern (format ":%s" (symbol-name x))) ,x))))
                      (-partition 2 vars))))
+
+;;; Lists
+(defun rem-at-end (xs &rest ys)
+  (append xs ys))
 
 ;;; Local variables
 (defun rem-ensure-prop-line ()
