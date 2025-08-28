@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.7.10
+;; Version: 0.7.11
 ;; Package-Requires: ((llama "1.0.0"))
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -265,6 +265,18 @@ points to a directory."
           (add-file-local-variable-prop-line var 'val)
           (delete-file-local-variable-prop-line var))
       (unintern var nil))))
+
+;;; Objects
+(defun rem-object-slots (object)
+  (->> (type-of object)
+       eieio-class-slots
+       (mapcar #'eieio-slot-descriptor-name)))
+
+(defun rem-nil-slots (object)
+  (setq object (clone object))
+  (cl-dolist (slot (rem-object-slots object))
+    (setf (slot-value object slot) nil))
+  object)
 
 ;;; Quotes
 (defun rem-quoted-p (form)
