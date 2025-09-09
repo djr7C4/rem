@@ -278,6 +278,15 @@ points to a directory."
     (setf (slot-value object slot) nil))
   object)
 
+;; This is needed since `change-class' is not currently implemented.
+(defun rem-change-class (object class)
+  "Create an instance of CLASS and copy the slots of OBJECT into it."
+  (let ((object2 (funcall class)))
+    (cl-dolist (slot (cl-intersection (mapcar #'eieio-slot-descriptor-name (eieio-class-slots (type-of object)))
+                                      (mapcar #'eieio-slot-descriptor-name (eieio-class-slots class))))
+      (setf (slot-value object2 slot) (slot-value object slot)))
+    object2))
+
 ;;; Quotes
 (defun rem-quoted-p (form)
   "Determine if form is a quoted form."
