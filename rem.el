@@ -201,8 +201,8 @@ points to a directory."
   (s-chop-suffix "/" path))
 
 (defun rem-relative-path (path dir)
-  (rem-slash (s-chop-prefix (rem-slash (f-canonical dir))
-                            (f-canonical path))))
+  (f-slash (s-chop-prefix (rem-slash (f-canonical dir))
+                          (f-canonical path))))
 
 ;;; Functions
 (defmacro rem-fn (&rest body)
