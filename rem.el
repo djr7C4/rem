@@ -5,7 +5,10 @@
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
 ;; Version: 0.7.13
-;; Package-Requires: ((llama "1.0.0"))
+;; Package-Requires: (
+;;   (cond-let "0.1.1")
+;;   (llama "1.0.0")
+;;   (noflet "0.0.15"))
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of version 3 of the GNU General Public License, as
@@ -21,6 +24,7 @@
 
 (require 'anaphora)
 (require 'cl-lib)
+(require 'cond-let)
 (require 'dash)
 (require 'f)
 (require 'llama)
@@ -925,6 +929,59 @@ unless RETURN was passed explicitly."
   (setq path (f-canonical path))
   (length (f-split path)))
 
+;;; Shorthands
+(defvar rem-read-symbol-shorthands
+  `(("db" . "cl-destructuring-bind")
+    ("mvb" . "cl-multiple-value-bind")
+    ("mvs" . "cl-multiple-value-setq")
+    ("with-gensyms" . "cl-with-gensyms")
+    ("once-only" . "cl-once-only")
+    ("dflet" . "noflet")
+    ("plet" . "pcase-let")
+    ("plet*" . "pcase-let*")
+    ("psetq*" . "pcase-setq")
+    ("pdolist" . "pcase-dolist")
+    ("plambda" . "pcase-lambda")
+    ("pdefmacro" . "pcase-defmacro")
+    ("epcase" . "pcase-exhaustive")
+    ("fn" . "rem-fn")
+    ,@(mapcar (lambda (k)
+                `(,(format "fn%d" k) . ,(format "rem-fn%d" k)))
+              (-iota 10 1))
+    ;; From cond-let
+    ("and$"      . "cond-let--and$")
+    ("and>"      . "cond-let--and>")
+    ("and-let"   . "cond-let--and-let")
+    ("if-let"    . "cond-let--if-let")
+    ("when-let"  . "cond-let--when-let")
+    ("while-let" . "cond-let--while-let")))
+
+(defun rem-install-read-symbol-shorthands ()
+  "Add `rem-read-symbol-shorthands' to the `read-symbol-shorthands'
+for the current buffer."
+  (interactive)
+  (let ((shorthands (append read-symbol-shorthands (cl-set-difference rem-read-symbol-shorthands read-symbol-shorthands))))
+    (add-file-local-variable 'read-symbol-shorthands shorthands)
+    ;; `add-file-local-variable' puts all the cells of the alist on the same
+    ;; line so we clean up the result.
+    (goto-char (point-max))
+    (save-match-data
+      (search-backward ";; read-symbol-shorthands:")
+      ;; Put the first cell on the line after "read-symbol-shorthands:".
+      ;; Otherwise, it looks really ugly.
+      (re-search-forward ": +(")
+      (just-one-space 0)
+      (insert "\n;;   ")
+      (let ((pt 0)
+            (parse-sexp-ignore-comments nil))
+        (while (and (ignore-errors
+                      (forward-sexp)
+                      t)
+                    (/= (point) pt)
+                    (not (looking-at-p ")")))
+          (insert "\n;;  ")
+          (setq pt (point)))))))
+
 ;;; Transient
 (defun rem-call-transient-synchronously (fun &rest args)
   "Call the transient FUN with ARGS synchronously. FUN may also be a
@@ -954,4 +1011,38 @@ It does not match ambiguous things such as abc.xyz.")
   (file-name-as-directory (url-recreate-url url)))
 
 (provide 'rem)
+
+;; Local Variables:
+;; read-symbol-shorthands: (
+;;   ("db" . "cl-destructuring-bind")
+;;   ("mvb" . "cl-multiple-value-bind")
+;;   ("mvs" . "cl-multiple-value-setq")
+;;   ("with-gensyms" . "cl-with-gensyms")
+;;   ("once-only" . "cl-once-only")
+;;   ("dflet" . "noflet")
+;;   ("plet" . "pcase-let")
+;;   ("plet*" . "pcase-let*")
+;;   ("psetq*" . "pcase-setq")
+;;   ("pdolist" . "pcase-dolist")
+;;   ("plambda" . "pcase-lambda")
+;;   ("pdefmacro" . "pcase-defmacro")
+;;   ("epcase" . "pcase-exhaustive")
+;;   ("fn" . "rem-fn")
+;;   ("fn1" . "rem-fn1")
+;;   ("fn2" . "rem-fn2")
+;;   ("fn3" . "rem-fn3")
+;;   ("fn4" . "rem-fn4")
+;;   ("fn5" . "rem-fn5")
+;;   ("fn6" . "rem-fn6")
+;;   ("fn7" . "rem-fn7")
+;;   ("fn8" . "rem-fn8")
+;;   ("fn9" . "rem-fn9")
+;;   ("fn10" . "rem-fn10")
+;;   ("and$" . "cond-let--and$")
+;;   ("and>" . "cond-let--and>")
+;;   ("and-let" . "cond-let--and-let")
+;;   ("if-let" . "cond-let--if-let")
+;;   ("when-let" . "cond-let--when-let")
+;;   ("while-let" . "cond-let--while-let"))
+;; End:
 ;;; rem.el ends here
