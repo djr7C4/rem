@@ -26,6 +26,7 @@
 (require 'llama)
 (require 'map)
 (require 'rem-abbrev)
+(require 'transient)
 (require 'url-parse)
 
 ;;; Algorithms
@@ -923,6 +924,18 @@ unless RETURN was passed explicitly."
 (defun rem-path-length (path)
   (setq path (f-canonical path))
   (length (f-split path)))
+
+;;; Transient
+(defun rem-synchronous-transient (fun &rest args)
+  "Call the transient FUN with ARGS synchronously. FUN may also be a
+function that calls a transient. Normal control flow will resume
+after the transient exits instead of immediately as it would
+normally."
+  (dflet ((transient--recursive-edit (orig-fun)
+                                     (funcall orig-fun)))
+    (let ((transient-post-exit-hook (cons #'exit-recursive-edit transient-post-exit-hook)))
+      (apply fun args)
+      (recursive-edit))))
 
 ;;; URLs
 ;; Based on the erc-button-url-regexp variable.
