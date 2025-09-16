@@ -926,7 +926,7 @@ unless RETURN was passed explicitly."
   (length (f-split path)))
 
 ;;; Transient
-(defun rem-synchronous-transient (fun &rest args)
+(defun rem-call-transient-synchronously (fun &rest args)
   "Call the transient FUN with ARGS synchronously. FUN may also be a
 function that calls a transient. Normal control flow will resume
 after the transient exits instead of immediately as it would
