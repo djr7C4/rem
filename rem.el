@@ -956,10 +956,7 @@ unless RETURN was passed explicitly."
     ("when-let"  . "cond-let--when-let")
     ("while-let" . "cond-let--while-let")))
 
-(defun rem-install-read-symbol-shorthands ()
-  "Add `rem-read-symbol-shorthands' to the `read-symbol-shorthands'
-for the current buffer."
-  (interactive)
+(defun rem-install-read-symbol-shorthands-in-buffer ()
   (save-match-data
     (let ((parse-sexp-ignore-comments nil)
           (shorthands (append (cl-set-difference read-symbol-shorthands rem-read-symbol-shorthands :test #'equal) rem-read-symbol-shorthands)))
@@ -988,6 +985,27 @@ for the current buffer."
                     (not (looking-at-p ")")))
           (insert "\n;;  ")
           (setq pt (point)))))))
+
+(defun rem-install-read-symbol-shorthands (&optional arg)
+  "By default, add `rem-read-symbol-shorthands' to the
+`read-symbol-shorthands' for the current buffer. With a prefix
+argument, do it for all files in the specified directory."
+  (interactive "P")
+  (if arg
+      (let* ((dir (rem-comp-read "Elisp directory: "
+                                 #'completion-file-name-table
+                                 :predicate #'f-dir-p
+                                 :require-match t
+                                 ;; Default to the current directory.
+                                 :default "./"))
+             (paths (rem-elisp-files-to-load dir :recursive t)))
+        (save-match-data
+          (cl-dolist (path paths)
+            (with-current-buffer (find-file-noselect path)
+              (save-excursion
+                (re-search-forward (format "^;+%s+Local Variables:" rem-space-char-regexp) nil t)
+                (rem-install-read-symbol-shorthands-in-buffer))))))
+    (rem-install-read-symbol-shorthands-in-buffer)))
 
 (defun rem-define-aliases ()
   (mapc (fn (defalias (intern (car %)) (intern (cdr %)))) rem-read-symbol-shorthands))
@@ -1149,8 +1167,6 @@ It does not match ambiguous things such as abc.xyz.")
 ;;   ("and>" . "cond-let--and>")
 ;;   ("and-let" . "cond-let--and-let")
 ;;   ("if-let" . "cond-let--if-let")
-;;   ("if-let*" . "cond-let--if-let*")
 ;;   ("when-let" . "cond-let--when-let")
-;;   ("when-let*" . "cond-let--when-let*")
 ;;   ("while-let" . "cond-let--while-let"))
 ;; End:
