@@ -30,7 +30,6 @@
 (require 'llama)
 (require 'map)
 (require 'noflet)
-(require 'rem-abbrev)
 (require 'transient)
 (require 'url-parse)
 
@@ -954,7 +953,9 @@ unless RETURN was passed explicitly."
     ("and>"      . "cond-let--and>")
     ("and-let"   . "cond-let--and-let")
     ("if-let"    . "cond-let--if-let")
+    ("if-let*"    . "cond-let--if-let*")
     ("when-let"  . "cond-let--when-let")
+    ("when-let*"  . "cond-let--when-let*")
     ("while-let" . "cond-let--while-let")))
 
 (defun rem-install-read-symbol-shorthands ()
@@ -982,6 +983,9 @@ for the current buffer."
                     (not (looking-at-p ")")))
           (insert "\n;;  ")
           (setq pt (point)))))))
+
+(defun rem-define-aliases ()
+  (mapc (fn (defalias (intern (car %)) (intern (cdr %)))) rem-read-symbol-shorthands))
 
 ;;; Transient
 (defun rem-call-transient-synchronously (fun &rest args)
