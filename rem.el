@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.7.13
+;; Version: 0.8.0
 ;; Package-Requires: (
 ;;   (cond-let "0.1.1")
 ;;   (llama "1.0.0")
