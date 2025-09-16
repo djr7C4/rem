@@ -29,6 +29,7 @@
 (require 'f)
 (require 'llama)
 (require 'map)
+(require 'noflet)
 (require 'rem-abbrev)
 (require 'transient)
 (require 'url-parse)
