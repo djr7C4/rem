@@ -961,7 +961,7 @@ unless RETURN was passed explicitly."
   "Add `rem-read-symbol-shorthands' to the `read-symbol-shorthands'
 for the current buffer."
   (interactive)
-  (let ((shorthands (append read-symbol-shorthands (cl-set-difference rem-read-symbol-shorthands read-symbol-shorthands))))
+  (let ((shorthands (append (cl-set-difference read-symbol-shorthands rem-read-symbol-shorthands :test #'equal) rem-read-symbol-shorthands)))
     (add-file-local-variable 'read-symbol-shorthands shorthands)
     ;; `add-file-local-variable' puts all the cells of the alist on the same
     ;; line so we clean up the result.
