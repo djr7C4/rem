@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.8.0
+;; Version: 0.8.1
 ;; Package-Requires: (
 ;;   (cond-let "0.1.1")
 ;;   (llama "1.0.0")
@@ -963,9 +963,9 @@ unless RETURN was passed explicitly."
       ;; `add-file-local-variable' has issues when the value of the variable spans
       ;; multiple lines.
       (goto-char (point-max))
-      (search-backward ";; read-symbol-shorthands:")
-      (search-forward "(")
-      (backward-char)
+      (when (ignore-errors (search-backward ";; read-symbol-shorthands:"))
+        (search-forward "(")
+        (backward-char))
       (delete-region (point) (progn (forward-sexp) (point)))
       (add-file-local-variable 'read-symbol-shorthands shorthands)
       ;; `add-file-local-variable' puts all the cells of the alist on the same
