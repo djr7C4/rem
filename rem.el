@@ -943,14 +943,19 @@ unless RETURN was passed explicitly."
 ;;; Memoization
 (defvar rem-memoization-data (make-hash-table :test #'eq))
 
-(cl-defun rem-memoize (fun &key (test #'equal))
+(defvar rem-memoization-test #'equal)
+
+(cl-defun rem-memoize (fun &key (test rem-memoization-test) lru (lru-max-size 128))
   "Create a memoized version of FUN.
 
-This is done caching values in a hash table with TEST. By
-default, cache entries are never removed. Use
-`rem-reset-memoization' to clear the hash table. When FUN is a
-symbol, set its function to the new memoized version. Otherwise,
-return the memoized function."
+This is done caching values in a hash table with TEST. When FUN
+is a symbol, set its function to the new memoized version.
+Otherwise, return the memoized function.
+
+When LRU is nil, cache entries are never removed unless
+`rem-reset-memoization' is invoked. When it is non-nil, whenever
+there are more than LRU-MAX-SIZE entries the least recently used
+entry is removed."
   (let* ((arglist (help-function-arglist fun))
          (vars (rem-arglist-vars arglist))
          ;; Don't use a list when it isn't necessary. This improves performance
@@ -958,6 +963,7 @@ return the memoized function."
          (key-vars (if (cdr vars)
                        vars
                      (car vars)))
+         (recent (cons nil nil))
          (table (make-hash-table :test test))
          (wrapped-fun
           ;; Native compilation of lambdas produces an error.
