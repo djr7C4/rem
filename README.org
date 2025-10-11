@@ -1,3 +1,4 @@
 * REM (Random Elisp Modules)
 REM is an assortment of generic utilities that are used in my other packages.
-They are available here to avoid duplication. The API may change as needed.
+They are available here to avoid duplication. Be aware that the API may change
+as needed.

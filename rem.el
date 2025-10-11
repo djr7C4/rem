@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.8.2
+;; Version: 0.9.0
 ;; Package-Requires: (
 ;;   (cond-let "0.1.1")
 ;;   (llama "1.0.0")
@@ -27,6 +27,7 @@
 (require 'cond-let)
 (require 'dash)
 (require 'f)
+(require 'help)
 (require 'llama)
 (require 'map)
 (require 'noflet)
@@ -923,6 +924,100 @@ unless RETURN was passed explicitly."
 
 ;;; Email
 (defvar rem-email-address-regexp "[a-zA-Z0-9_!#$%&'*+-/=?]+@[a-zA-Z0-9.-]+\\.[a-zA-Z0-9.-]+")
+
+;;; Functions
+(defun rem-arglist-vars (arglist)
+  "Extract the variable names from a `cl-defun' ARGLIST."
+  (cl-labels ((extract (args)
+                (cond
+                 ((memq (car args) '(&whole &optional &rest &body &key &allow-other-keys &aux))
+                  (extract (cdr args)))
+                 (args
+                  (cons
+                   (if (consp (car args))
+                       (caar args)
+                     (car args))
+                   (extract (cdr args)))))))
+    (extract arglist)))
+
+;;; Memoization
+(defvar rem-memoization-data (make-hash-table :test #'eq))
+
+(cl-defun rem-memoize (fun &key (test #'equal))
+  "Create a memoized version of FUN.
+
+This is done caching values in a hash table with TEST. By
+default, cache entries are never removed. Use
+`rem-reset-memoization' to clear the hash table. When FUN is a
+symbol, set its function to the new memoized version. Otherwise,
+return the memoized function."
+  (let* ((arglist (help-function-arglist fun))
+         (vars (rem-arglist-vars arglist))
+         ;; Don't use a list when it isn't necessary. This improves performance
+         ;; by a constant factor.
+         (key-vars (if (cdr vars)
+                       vars
+                     (car vars)))
+         (table (make-hash-table :test test))
+         (wrapped-fun
+          ;; Native compilation of lambdas produces an error.
+          (byte-compile
+           (if (equal arglist vars)
+               `(lambda ,vars
+                  ;; When there's only one variable, we don't need to use a list.
+                  (let* ((key ,(if (consp key-vars)
+                                   `(list ,@key-vars)
+                                 `,key-vars))
+                         (memoized-value (gethash key ,table)))
+                    (if memoized-value
+                        memoized-value
+                      (setf (gethash key ,table) (funcall ,(symbol-function fun) ,@vars)))))
+             `(lambda (&rest args)
+                (let ((memoized-value (gethash args ,table)))
+                  (if memoized-value
+                      memoized-value
+                    (setf (gethash args ,table) (apply ,(symbol-function fun) args))))))))
+         (old-data (gethash fun table))
+         (data (list table fun wrapped-fun)))
+    (when old-data
+      (dsb (_old-table _old-fun old-wrapped-fun)
+          old-data
+        (remhash old-wrapped-fun rem-memoization-data)))
+    (setf (gethash fun rem-memoization-data) data
+          (gethash wrapped-fun rem-memoization-data) data)
+    (when (symbolp fun)
+      (fset fun wrapped-fun))))
+
+(defun rem-unmemoize (fun)
+  "Remove the memoization for FUN.
+
+When FUN is a symbol, restore its original function value.
+Otherwise, return the original function value."
+  (let ((data (gethash fun rem-memoization-data)))
+    (when data
+      (dsb (_table orig-fun _wrapped-fun)
+          data
+        (if (symbolp fun)
+            (fset fun orig-fun)
+          orig-fun)))))
+
+(defun rem-reset-memoization (fun)
+  "Clear the memoization hash table for FUN."
+  (let ((data (gethash fun rem-memoization-data)))
+    (unless data
+      (error "The function %S is not memoized" fun))
+    (dsb (table _orig-fun _wrapped-fun)
+        data
+      (clrhash table)
+      t)))
+
+(cl-defmacro rem-defmemoize (name args &rest body)
+  "Define a memoized function named NAME with ARGS and BODY."
+  (declare (indent 2) (doc-string 3) (debug defun))
+  `(progn
+     (cl-defun ,name ,args
+       ,@body)
+     (rem-memoize ',name)))
 
 ;;; Paths
 (defun rem-path-length (path)
