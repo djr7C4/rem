@@ -22,6 +22,10 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+;;; Commentary: REM is a utility library containing miscellaneous routines that
+;;; are not available elsewhere or are unmaintained.
+
+;;; Code:
 (require 'anaphora)
 (require 'cl-lib)
 (require 'cond-let)
@@ -36,10 +40,11 @@
 
 ;;; Algorithms
 (defun rem-topological-sort (nodes edges)
-  "Perform a topological sort on the list NODES and return the
-result. EDGES should be a mapping that maps each node to a list
-of the nodes that it is connected to. Each node must be
-comparable using `equal'."
+  "Perform a topological sort on the list NODES.
+
+EDGES should be a mapping from each node to a list of the nodes
+that it is connected to. Each node must be comparable using
+`equal'."
   (let ((edges (map-into edges (list 'hash-table :test #'equal :size (map-length edges))))
         (in-degrees (make-hash-table :test #'equal :size (map-length nodes)))
         ;; This is a list of nodes with in-degrees of 0 (i.e. they have no
@@ -177,8 +182,10 @@ This ensures that each file is loaded after those it depends on."
       (f-ancestor-of-p path path2)))
 
 (defun rem-no-ext (path)
-  "Remove all extensions from PATH. This is different from
-`f-no-ext' which only removes the last one."
+  "Remove all extensions from PATH.
+
+This is different from `f-no-ext' which only removes the last
+one."
   (let (old-path)
     (while (not (equal path old-path))
       (setq old-path path
@@ -295,11 +302,11 @@ points to a directory."
 
 ;;; Quotes
 (defun rem-quoted-p (form)
-  "Determine if form is a quoted form."
+  "Determine if FORM is quoted."
   (eq (car-safe form) 'quote))
 
 (defun rem-sharp-quoted-p (form)
-  "Determine if form is a quoted form."
+  "Determine if FORM is sharp quoted."
   (eq (car-safe form) 'function))
 
 ;;; Trees
@@ -382,7 +389,7 @@ is nil, use the current point's position."
   "Move the current line to index OFFSET in the selected window.
 
 Indexing is from 1. (`move-to-window-line' OFFSET) will have no
-effect after running this function."
+effect after running this function. Recenter when RECENTER is non-nil."
   (unless (<= 0 offset (truncate (window-screen-lines)))
     (error "Invalid index offset: %d" offset))
   ;; Convert to 0-indexing.
@@ -458,7 +465,7 @@ Text properties are ignored."
          string2)))
 
 (defun rem-split-first (separator string)
-  "Split string at the first occurrence of separator."
+  "Split STRING at the first occurrence of SEPARATOR."
   (if-let ((start (cl-search separator string)))
       (list (substring string 0 start)
             (substring string (+ start (length separator))))
@@ -505,7 +512,7 @@ Match data is saved. LIMIT and GREEDY have the same meaning as in
 
 ;;; Thing at point
 (defun rem-plain-thing-at-point (thing)
-  "Return the thing at point without text properties."
+  "Return the THING at point without text properties."
   (awhen (thing-at-point thing)
     (rem-strip-text-properties it)))
 
@@ -530,7 +537,7 @@ Match data is saved. LIMIT and GREEDY have the same meaning as in
 
 (defun rem-define-keys (keymaps bindings)
   "Define BINDINGS for each of the KEYMAPS."
-  (rem-map-bindings 'define-key keymaps bindings))
+  (rem-map-bindings #'define-key keymaps bindings))
 
 (defun rem-binding-list-to-alist (bindings)
   (mapcar (lambda (bind)
@@ -538,7 +545,9 @@ Match data is saved. LIMIT and GREEDY have the same meaning as in
           (-partition 2 bindings)))
 
 (defun rem-set-keys (keymaps &rest bindings)
-  "This is the same as `rem-define-keys' but has the syntax of
+  "Establish BINDINGS in KEYMAPS.
+
+This is similar to `rem-define-keys' but has the syntax of
 `define-keymap'."
   (unless (cl-evenp (length bindings))
     (error "The length of bindings is odd"))
@@ -620,14 +629,18 @@ even if the archive is a single compressed file."
                                 override))
 
 (cl-defun rem-comp-read (prompt collection &key predicate require-match initial-input history default sort-fun metadata override-metadata keymap multiple)
-  "Perform completing read with keyword arguments and some extensions.
+  "Call `completing-read' on COLLECTION with PROMPT.
+
+Keyword arguments are used and some extensions are available on
+top of standard `completing-read' capabilities.
 
 Most of the arguments are the same as for `completing-read' but
 are keyword arguments instead. HISTORY must be a symbol.
 INITIAL-INPUT should not be used as it is better to use DEFAULT
-so that the user can pull in the default value with M-n if they
-wish. See `completing-read' for more details on why INITIAL-INPUT
-is considered obsolete.
+so that the user can pull in the default value with
+\\<minibuffer-local-map> \\[next-history-element] if they wish.
+See `completing-read' for more details on why INITIAL-INPUT is
+considered obsolete.
 
 INHERIT-INPUT-METHOD is not supported because several frameworks
 do not support it. If SORT-FUN is non-nil, it will be used to
@@ -643,10 +656,10 @@ during this call to `completing-read'. (throw \\='rem-comp-read
 return-value) can be used to create commands that can return from
 the `completing-read' call. If MULTIPLE is non-nil, multiple
 candidates will be allowed using the completion framework's
-facilities for it or `completing-read-multiple'."
+facilities for it or `completing-read-multiple'.
   ;; Some completion frameworks (e.g. helm) cannot handle the other options for
   ;; history that `completing-read' allows.
-  (cl-assert (symbolp history))
+  (cl-assert (symbolp history))"
   (when metadata
     (setq collection (rem-collection-with-metadata collection metadata override-metadata)))
   (defvar vertico-preselect)
@@ -742,11 +755,16 @@ facilities for it or `completing-read-multiple'."
                         default)))))))))
 
 (cl-defun rem-read-from-mini (prompt &key initial-contents keymap read history default inherit-input-method)
-  "This is `read-from-minibuffer' with keyword arguments.
+  "Read from the minibuffer using PROMPT.
 
-As in `read-from-minibuffer', INITIAL-CONTENTS should not be used
-as it is better to use DEFAULT so that the user can pull in the
-default value with M-n if they wish."
+This is `read-from-minibuffer' but with keyword arguments. As in
+`read-from-minibuffer', INITIAL-CONTENTS should not be used as it
+is better to use DEFAULT so that the user can pull in the default
+value with \\<minibuffer-local-map> \\[next-history-element] if
+they wish.
+
+INITIAL-CONTENTS, KEYMAP, READ, HISTORY, DEFAULT and
+INHERIT-INPUT-METHOD are as in `read-from-minibuffer'."
   (read-from-minibuffer prompt initial-contents keymap read history default inherit-input-method))
 
 ;;; Symbols
@@ -1026,10 +1044,11 @@ Otherwise, return the original function value."
 
 ;;; Transient
 (defun rem-call-transient-synchronously (fun &rest args)
-  "Call the transient FUN with ARGS synchronously. FUN may also be a
-function that calls a transient. Normal control flow will resume
-after the transient exits instead of immediately as it would
-normally."
+  "Call the transient FUN with ARGS synchronously.
+
+FUN may also be a function that calls a transient. Normal control
+flow will resume after the transient exits instead of immediately
+as it would normally."
   (dflet ((transient--recursive-edit (orig-fun)
                                      (funcall orig-fun)))
     (let ((transient-post-exit-hook (cons #'exit-recursive-edit transient-post-exit-hook)))
