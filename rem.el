@@ -984,9 +984,9 @@ entry is removed."
                       memoized-value
                     (setf (gethash args ,table) (apply ,(symbol-function fun) args))))))))
          (old-data (gethash fun table))
-         (data (list table fun wrapped-fun)))
+         (data (list table recent fun wrapped-fun)))
     (when old-data
-      (dsb (_old-table _old-fun old-wrapped-fun)
+      (dsb (_old-table _recent _old-fun old-wrapped-fun)
           old-data
         (remhash old-wrapped-fun rem-memoization-data)))
     (setf (gethash fun rem-memoization-data) data
@@ -1001,7 +1001,7 @@ When FUN is a symbol, restore its original function value.
 Otherwise, return the original function value."
   (let ((data (gethash fun rem-memoization-data)))
     (when data
-      (dsb (_table orig-fun _wrapped-fun)
+      (dsb (_table _recent orig-fun _wrapped-fun)
           data
         (if (symbolp fun)
             (fset fun orig-fun)
@@ -1012,9 +1012,11 @@ Otherwise, return the original function value."
   (let ((data (gethash fun rem-memoization-data)))
     (unless data
       (error "The function %S is not memoized" fun))
-    (dsb (table _orig-fun _wrapped-fun)
+    (dsb (table recent _orig-fun _wrapped-fun)
         data
       (clrhash table)
+      (setf (car recent) nil
+            (cdr recent) nil)
       t)))
 
 (cl-defmacro rem-defmemoize (name args &rest body)
