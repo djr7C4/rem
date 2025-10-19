@@ -421,6 +421,41 @@ directory."
 
 (def-edebug-spec rem-with-directory t)
 
+;;; Visibility
+(defun rem-buffer-visible-p (&optional buffer)
+  "Return non-nil if BUFFER is displayed in a window of a visible frame."
+  (get-buffer-window buffer 'visible))
+
+(defun rem-initial-terminal-p (&optional terminal)
+  "Return non-nil if TERMINAL is the initial terminal.
+
+This is the `F1' frame that is created when Emacs is run as a daemon."
+  (equal (terminal-name terminal) "initial_terminal"))
+
+(defun rem-frame-visible-p (frame)
+  "Return non-nil if FRAME is visible.
+
+The initial terminal frame is technically visible but is not
+treated as such for the purposes of this function since the user
+ cannot actually see it."
+  (and (eq (frame-visible-p frame) t)
+       (not (rem-initial-terminal-p frame))))
+
+(defun rem-visible-frame-list ()
+  "Return a list of all visible frames."
+  (-filter (lambda (frame)
+             (not (rem-initial-terminal-p frame)))
+           (visible-frame-list)))
+
+(defun rem-default-frame ()
+  "Return a sensible choice for a frame.
+
+If the selected frame is visible, choose it. Otherwise, choose
+the first visible frame in the list."
+  (if (rem-frame-visible-p (selected-frame))
+      (selected-frame)
+    (car (rem-visible-frame-list))))
+
 ;;; Whitespace
 (defvar rem-newlines "\n\r"
   "String of newline characters.")
