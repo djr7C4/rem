@@ -7,6 +7,7 @@
 ;; Version: 0.9.0
 ;; Package-Requires: (
 ;;   (cond-let "0.1.1")
+;;   (emacs "29")
 ;;   (llama "1.0.0")
 ;;   (noflet "0.0.15"))
 ;;
@@ -22,8 +23,9 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-;;; Commentary: REM is a utility library containing miscellaneous routines that
-;;; are not available elsewhere or are unmaintained.
+;;; Commentary:
+;;; REM is a utility library containing miscellaneous routines that are not
+;;; available elsewhere or are unmaintained.
 
 ;;; Code:
 (require 'anaphora)
