@@ -1051,11 +1051,15 @@ When FUN is a symbol, restore its original function value.
 Otherwise, return the original function value."
   (let ((data (gethash fun rem-memoization-data)))
     (when data
-      (dsb (_table orig-fun _wrapped-fun)
+      (dsb (_table orig-fun wrapped-fun)
           data
+        ;; Restore the original function.
         (if (symbolp fun)
             (fset fun orig-fun)
-          orig-fun)))))
+          orig-fun)
+        ;; Delete memoization entries in the hash table.
+        (remhash orig-fun rem-memoization-data)
+        (remhash wrapped-fun rem-memoization-data)))))
 
 (defun rem-reset-memoization (fun)
   "Clear the memoization hash table for FUN."
