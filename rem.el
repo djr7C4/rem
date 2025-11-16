@@ -1033,15 +1033,16 @@ return the memoized function."
                       memoized-value
                     (setf (gethash args ,table) (apply ,(symbol-function fun) args))))))))
          (old-data (gethash fun table))
-         (data (list table fun wrapped-fun)))
+         (data (list table (symbol-function fun) wrapped-fun)))
     (when old-data
       (dsb (_old-table _old-fun old-wrapped-fun)
           old-data
         (remhash old-wrapped-fun rem-memoization-data)))
     (setf (gethash fun rem-memoization-data) data
           (gethash wrapped-fun rem-memoization-data) data)
-    (when (symbolp fun)
-      (fset fun wrapped-fun))))
+    (if (symbolp fun)
+        (fset fun wrapped-fun)
+      wrapped-fun)))
 
 (defun rem-unmemoize (fun)
   "Remove the memoization for FUN.
