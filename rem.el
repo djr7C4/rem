@@ -267,6 +267,7 @@ points to a directory."
 
 ;;; Lists
 (defun rem-at-end (xs &rest ys)
+  "Append XS and YS."
   (append xs ys))
 
 ;;; Local variables
