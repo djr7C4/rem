@@ -274,6 +274,9 @@ points to a directory."
                             (list ,(intern (format ":%s" (symbol-name x))) ,x))))
                      (-partition 2 vars))))
 
+(defun rem-complement (fun)
+  (fn (not (apply fun &*))))
+
 ;;; Lists
 (defun rem-at-end (xs &rest ys)
   "Append XS and YS."
