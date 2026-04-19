@@ -183,6 +183,9 @@ This ensures that each file is loaded after those it depends on."
   (or (f-same-p path path2)
       (f-ancestor-of-p path path2)))
 
+(defun rem-descendant-of-inclusive-p (path path2)
+  (rem-ancestor-of-inclusive-p path2 path))
+
 (defun rem-no-ext (path)
   "Remove all extensions from PATH.
 
