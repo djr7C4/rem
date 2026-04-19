@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.9.2
+;; Version: 0.9.3
 ;; Package-Requires: (
 ;;   (cond-let "0.1.1")
 ;;   (emacs "29")
@@ -179,9 +179,15 @@ This ensures that each file is loaded after those it depends on."
     (rem-topological-sort paths dependencies)))
 
 ;;; Files
+(defun rem-ancestor-of-p (path path2)
+  (f-ancestor-of-p (f-canonical path) (f-canonical path2)))
+
+(defun rem-descendant-of-p (path path2)
+  (rem-ancestor-of path2 path))
+
 (defun rem-ancestor-of-inclusive-p (path path2)
   (or (f-same-p path path2)
-      (f-ancestor-of-p path path2)))
+      (rem-ancestor-of-p path path2)))
 
 (defun rem-descendant-of-inclusive-p (path path2)
   (rem-ancestor-of-inclusive-p path2 path))
