@@ -6,7 +6,6 @@
 ;; URL: https://github.com/djr7C4/rem
 ;; Version: 0.9.3
 ;; Package-Requires: (
-;;   (cond-let "0.1.1")
 ;;   (emacs "29")
 ;;   (llama "1.0.0")
 ;;   (noflet "0.0.15"))
@@ -516,7 +515,7 @@ Text properties are ignored."
 
 (defun rem-split-first (separator string)
   "Split STRING at the first occurrence of SEPARATOR."
-  (if-let ((start (cl-search separator string)))
+  (if-let* ((start (cl-search separator string)))
       (list (substring string 0 start)
             (substring string (+ start (length separator))))
     string))
@@ -1153,12 +1152,6 @@ It does not match ambiguous things such as abc.xyz.")
 ;;   ("fn7" . "rem-fn7")
 ;;   ("fn8" . "rem-fn8")
 ;;   ("fn9" . "rem-fn9")
-;;   ("fn10" . "rem-fn10")
-;;   ("and$" . "cond-let--and$")
-;;   ("and>" . "cond-let--and>")
-;;   ("and-let" . "cond-let--and-let")
-;;   ("if-let" . "cond-let--if-let")
-;;   ("when-let" . "cond-let--when-let")
-;;   ("while-let" . "cond-let--while-let"))
+;;   ("fn10" . "rem-fn10"))
 ;; End:
 ;;; rem.el ends here
