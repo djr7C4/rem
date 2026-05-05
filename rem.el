@@ -666,7 +666,7 @@ even if the archive is a single compressed file."
               `(metadata ,@new-metadata)
             (let ((current-metadata (cdr (completion-metadata (minibuffer-contents)
                                                               collection
-                                                              minibuffer-completion-predicate))))
+                                                              predicate))))
               `(metadata
                 ,@(map-merge 'alist current-metadata new-metadata)))))
       (complete-with-action action collection string predicate))))
