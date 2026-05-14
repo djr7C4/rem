@@ -252,6 +252,10 @@ points to a directory."
 (rem-define-fns)
 
 (defun rem-maybe-args (&rest args)
+  "Selectively create an argument list.
+
+For each element of ARGS at an odd index, if the element is
+non-nil then include the preceding argument in the list."
   (unless (cl-evenp (length args))
     (error "An even number of arguments is required"))
   (let (args2 include-x-p x)
@@ -264,6 +268,11 @@ points to a directory."
     (reverse args2)))
 
 (defmacro rem-maybe-kwd-args (&rest vars)
+  "Selectively create a list of variables.
+
+Generate code that when evaluated creates a list of variable
+values. Each variable at an even index in VARS is included if the
+variable at the following index evaluates to a non-nil value."
   (unless (cl-evenp (length vars))
     (error "An even number of variables is required"))
   `(append ,@(mapcar (lambda (pair)
