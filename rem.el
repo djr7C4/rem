@@ -229,6 +229,9 @@ points to a directory."
 
 ;;; Functions
 (defmacro rem-fn (&rest body)
+  "Create an anonymous function.
+
+It is similar to `llama' but wraps BODY in an implicit `progn'."
   (declare (indent 0))
   `(llama progn ,@body))
 
