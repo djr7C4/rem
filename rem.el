@@ -668,7 +668,7 @@ even if the archive is a single compressed file."
        ((bound-and-true-p fido-mode) 'fido)
        (t 'default))))
 
-(defun rem-collection-with-metadata (collection new-metadata &optional override)
+(cl-defun rem-collection-with-metadata (collection new-metadata &key override)
   (lambda (string predicate action)
     (if (eq action 'metadata)
         (progn
@@ -683,13 +683,16 @@ even if the archive is a single compressed file."
                 ,@(map-merge 'alist current-metadata new-metadata)))))
       (complete-with-action action collection string predicate))))
 
-(defun rem-collection-with-sort-fun (collection sort-fun &optional override)
+(cl-defun rem-collection-with-sort-fun (collection sort-fun &key override)
   (rem-collection-with-metadata collection
                                 `((display-sort-function . ,sort-fun)
                                   (cycle-sort-function . ,sort-fun))
-                                override))
+                                :override override))
 
-(cl-defun rem-comp-read (prompt collection &key predicate require-match initial-input history default sort-fun metadata override-metadata keymap multiple)
+(cl-defun rem-collection-with-group-fun (collection group-fun &key override)
+  (rem-collection-with-metadata collection `((group-function . ,group-fun)) :override override))
+
+(cl-defun rem-comp-read (prompt collection &key predicate require-match initial-input history default sort-fun group-fun metadata override-metadata keymap multiple)
   "Call `completing-read' on COLLECTION with PROMPT.
 
 Keyword arguments are used and some extensions are available on
@@ -706,21 +709,23 @@ considered obsolete.
 INHERIT-INPUT-METHOD is not supported because several frameworks
 do not support it. If SORT-FUN is non-nil, it will be used to
 sort collection before completion is performed. It should not
-modify collection. If METADATA is non-nil, it should be an alist
-that is merged with the completion metadata. It can also be a
-function that is called with the completion table as an argument
-to produce the metadata to merge. If OVERRIDE-METADATA is
-non-nil, then METADATA will replace the completion metadata
-instead of being merged with it. If KEYMAP is non-nil, it will be
-used to create temporary key bindings that will be available
-during this call to `completing-read'. (throw \\='rem-comp-read
-return-value) can be used to create commands that can return from
-the `completing-read' call. If MULTIPLE is non-nil, multiple
+modify collection. If GROUP-FUN is non-nil, it is used as the
+group-function in the completion metadata (see (elisp)Programmed
+Completion). If METADATA is non-nil, it should be an alist that
+is merged with the completion metadata. It can also be a function
+that is called with the completion table as an argument to
+produce the metadata to merge. If OVERRIDE-METADATA is non-nil,
+then METADATA will replace the completion metadata instead of
+being merged with it. If KEYMAP is non-nil, it will be used to
+create temporary key bindings that will be available during this
+call to `completing-read'. (throw \\='rem-comp-read return-value)
+can be used to create commands that can return from the
+`completing-read' call. If MULTIPLE is non-nil, multiple
 candidates will be allowed using the completion framework's
-facilities for it or `completing-read-multiple'.
+facilities for it or `completing-read-multiple'."
   ;; Some completion frameworks (e.g. helm) cannot handle the other options for
   ;; history that `completing-read' allows.
-  (cl-assert (symbolp history))"
+  (cl-assert (symbolp history))
   (when metadata
     (setq collection (rem-collection-with-metadata collection metadata override-metadata)))
   (defvar vertico-preselect)
@@ -798,6 +803,10 @@ facilities for it or `completing-read-multiple'.
            (cl-flet ((setup-keymap ()
                        (when keymap
                          (use-local-map (make-composed-keymap (list keymap) (current-local-map))))))
+             (when sort-fun
+               (setq collection (rem-collection-with-sort-fun collection sort-fun)))
+             (when group-fun
+               (setq collection (rem-collection-with-group-fun collection group-fun)))
              ;; Put the hook at the very end so that any hooks added by the
              ;; completion framework will run first. This is important when they
              ;; setup the local map using `use-local-map'. This allows bindings
@@ -806,9 +815,7 @@ facilities for it or `completing-read-multiple'.
                (funcall funcall-with-env
                         (if multiple #'completing-read-multiple #'completing-read)
                         prompt
-                        (if sort-fun
-                            (rem-collection-with-sort-fun collection sort-fun)
-                          collection)
+                        collection
                         predicate
                         require-match
                         initial-input
