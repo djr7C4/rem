@@ -676,9 +676,7 @@ even if the archive is a single compressed file."
             (setq new-metadata (funcall new-metadata collection)))
           (if override
               `(metadata ,@new-metadata)
-            (let ((current-metadata (cdr (completion-metadata (minibuffer-contents)
-                                                              collection
-                                                              predicate))))
+            (let ((current-metadata (cdr (completion-metadata string collection predicate))))
               `(metadata
                 ,@(map-merge 'alist current-metadata new-metadata)))))
       (complete-with-action action collection string predicate))))
@@ -710,19 +708,19 @@ INHERIT-INPUT-METHOD is not supported because several frameworks
 do not support it. If SORT-FUN is non-nil, it will be used to
 sort collection before completion is performed. It should not
 modify collection. If GROUP-FUN is non-nil, it is used as the
-group-function in the completion metadata (see (elisp)Programmed
-Completion). If METADATA is non-nil, it should be an alist that
-is merged with the completion metadata. It can also be a function
-that is called with the completion table as an argument to
-produce the metadata to merge. If OVERRIDE-METADATA is non-nil,
-then METADATA will replace the completion metadata instead of
-being merged with it. If KEYMAP is non-nil, it will be used to
-create temporary key bindings that will be available during this
-call to `completing-read'. (throw \\='rem-comp-read return-value)
-can be used to create commands that can return from the
-`completing-read' call. If MULTIPLE is non-nil, multiple
-candidates will be allowed using the completion framework's
-facilities for it or `completing-read-multiple'."
+group-function in the completion metadata (see Info
+node `(elisp)Programmed Completion'). If METADATA is non-nil, it
+should be an alist that is merged with the completion metadata.
+It can also be a function that is called with the completion
+table as an argument to produce the metadata to merge. If
+OVERRIDE-METADATA is non-nil, then METADATA will replace the
+completion metadata instead of being merged with it. If KEYMAP is
+non-nil, it will be used to create temporary key bindings that
+will be available during this call to `completing-read'. (throw
+\\='rem-comp-read return-value) can be used to create commands
+that can return from the `completing-read' call. If MULTIPLE is
+non-nil, multiple candidates will be allowed using the completion
+framework's facilities for it or `completing-read-multiple'."
   ;; Some completion frameworks (e.g. helm) cannot handle the other options for
   ;; history that `completing-read' allows.
   (cl-assert (symbolp history))
