@@ -725,7 +725,7 @@ framework's facilities for it or `completing-read-multiple'."
   ;; history that `completing-read' allows.
   (cl-assert (symbolp history))
   (when metadata
-    (setq collection (rem-collection-with-metadata collection metadata override-metadata)))
+    (setq collection (rem-collection-with-metadata collection metadata :override override-metadata)))
   (defvar vertico-preselect)
   ;; Give user-defined functions in the keymap a way to short-circuit the
   ;; `completing-read' call.
