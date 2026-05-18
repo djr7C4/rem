@@ -802,9 +802,9 @@ framework's facilities for it or `completing-read-multiple'."
                        (when keymap
                          (use-local-map (make-composed-keymap (list keymap) (current-local-map))))))
              (when sort-fun
-               (setq collection (rem-collection-with-sort-fun collection sort-fun)))
+               (setq collection (rem-collection-with-sort-fun collection sort-fun :override override-metadata)))
              (when group-fun
-               (setq collection (rem-collection-with-group-fun collection group-fun)))
+               (setq collection (rem-collection-with-group-fun collection group-fun :override override-metadata)))
              ;; Put the hook at the very end so that any hooks added by the
              ;; completion framework will run first. This is important when they
              ;; setup the local map using `use-local-map'. This allows bindings
