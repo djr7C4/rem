@@ -4,7 +4,7 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.9.3
+;; Version: 0.10.0
 ;; Package-Requires: (
 ;;   (emacs "29")
 ;;   (f "0.21.0")
