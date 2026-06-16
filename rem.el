@@ -574,8 +574,8 @@ Match data is saved. LIMIT and GREEDY have the same meaning as in
 ;;; Thing at point
 (defun rem-plain-thing-at-point (thing)
   "Return the THING at point without text properties."
-  (awhen (thing-at-point thing)
-    (rem-strip-text-properties it)))
+  (when-let* ((text (thing-at-point thing)))
+    (rem-strip-text-properties text)))
 
 (defun rem-plain-symbol-at-point ()
   "Return the symbol at point without text properties."
