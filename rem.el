@@ -1,5 +1,5 @@
 ;;; rem.el --- Random elisp modules -*- lexical-binding: t; -*-
-;; Copyright (C) 2025 David J. Rosenbaum <djr7c4@gmail.com>
+;; Copyright (C) 2025-2026 David J. Rosenbaum <djr7c4@gmail.com>
 
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
@@ -7,8 +7,10 @@
 ;; Version: 0.9.3
 ;; Package-Requires: (
 ;;   (emacs "29")
+;;   (f "0.21.0")
 ;;   (llama "1.0.0")
-;;   (noflet "0.0.15"))
+;;   (noflet "0.0.15")
+;;   (transient "0.12.0"))
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of version 3 of the GNU General Public License, as
@@ -27,9 +29,7 @@
 ;;; available elsewhere or are unmaintained.
 
 ;;; Code:
-(require 'anaphora)
 (require 'cl-lib)
-(require 'cond-let)
 (require 'dash)
 (require 'f)
 (require 'help)
