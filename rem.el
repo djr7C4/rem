@@ -1027,6 +1027,8 @@ unless RETURN was passed explicitly."
 ;;; Memoization
 (defvar rem-memoization-data (make-hash-table :test #'eq))
 
+(defvar rem-no-memoized-value (gensym))
+
 (cl-defun rem-memoize (fun &key (test #'equal))
   "Create a memoized version of FUN.
 
@@ -1052,15 +1054,15 @@ return the memoized function."
                   (let* ((key ,(if (consp key-vars)
                                    `(list ,@key-vars)
                                  `,key-vars))
-                         (memoized-value (gethash key ,table)))
-                    (if memoized-value
-                        memoized-value
-                      (setf (gethash key ,table) (funcall ,(symbol-function fun) ,@vars)))))
+                         (memoized-value (gethash key ,table rem-no-memoized-value)))
+                    (if (eq memoized-value rem-no-memoized-value)
+                        (setf (gethash key ,table) (funcall ,(symbol-function fun) ,@vars))
+                      memoized-value)))
              `(lambda (&rest args)
-                (let ((memoized-value (gethash args ,table)))
-                  (if memoized-value
-                      memoized-value
-                    (setf (gethash args ,table) (apply ,(symbol-function fun) args))))))))
+                (let ((memoized-value (gethash args ,table rem-no-memoized-value)))
+                  (if (eq memoized-value rem-no-memoized-value)
+                      (setf (gethash args ,table) (apply ,(symbol-function fun) args))
+                    memoized-value))))))
          (old-data (gethash fun table))
          (data (list table (symbol-function fun) wrapped-fun)))
     (when old-data
