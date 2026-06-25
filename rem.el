@@ -1030,7 +1030,7 @@ unless RETURN was passed explicitly."
 (cl-defun rem-memoize (fun &key (test #'equal))
   "Create a memoized version of FUN.
 
-This is done caching values in a hash table with TEST. By
+This is done by caching values in a hash table with TEST. By
 default, cache entries are never removed. Use
 `rem-reset-memoization' to clear the hash table. When FUN is a
 symbol, set its function to the new memoized version. Otherwise,
