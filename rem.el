@@ -1100,6 +1100,14 @@ Otherwise, return the original function value."
       (clrhash table)
       t)))
 
+(defun rem-get-memoization-data (fun)
+  (let ((data (gethash fun rem-memoization-data)))
+    (unless data
+      (error "The function %S is not memoized" fun))
+    (dsb (table orig-fun wrapped-fun)
+        data
+      (list :table table :orig-fun orig-fun :wrapped-fun wrapped-fun))))
+
 (cl-defmacro rem-defmemoize (name args &rest body)
   "Define a memoized function named NAME with ARGS and BODY."
   (declare (indent 2) (doc-string 3) (debug defun))
