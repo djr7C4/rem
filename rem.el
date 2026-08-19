@@ -108,7 +108,7 @@ that it is connected to. Each node must be comparable using
 ;;; Elisp
 (defvar rem-load-blacklist (list "-pkg\\.\\(el\\|elc\\)$" "\\(^\\|/\\).cask/" "\\(^\\|/\\).eask/"))
 
-(cl-defun rem-elisp-files-to-load (dir &key compressed recursive)
+(cl-defun rem-elisp-files-to-load (dir &key (blacklist rem-load-blacklist) compressed recursive)
   (let* ((extensions (if compressed
                          '(".el" ".el.gz")
                        '(".el")))
@@ -124,7 +124,7 @@ that it is connected to. Each node must be comparable using
                                           (and (cl-some (lambda (extension)
                                                           (s-ends-with-p extension path))
                                                         extensions)
-                                               (not (cl-some (-rpartial #'string-match-p path) rem-load-blacklist)))))
+                                               (not (cl-some (-rpartial #'string-match-p path) blacklist)))))
                                     recursive))))
     (setq files (cl-remove-duplicates files :test #'equal))))
 
