@@ -254,15 +254,25 @@ It is similar to `llama' but wraps BODY in an implicit `progn'."
 (rem-define-fns)
 
 (cl-defmacro rem-dflet ((&rest bindings) &rest body)
-  "This is the same as `cl-flet' but with dynamic bindings."
-  `(cl-letf ,(mapcar (lambda (binding)
-                       (dsb (sym args &rest fun-body)
-                           binding
-                         `((symbol-function ',sym)
-                           (lambda ,args
-                             ,@fun-body))))
-                     bindings)
-     ,@body))
+  "This is the same as `cl-flet' but with dynamic bindings.
+
+Inside the body of each local function binding, the symbol
+\\='this-fun is bound to the original function."
+  (let ((bindings (mapcan (lambda (binding)
+                            (dsb (sym args &rest fun-body)
+                                binding
+                              (with-gensyms (orig-fun)
+                                `((,orig-fun (symbol-function ',sym))
+                                  ((symbol-function ',sym)
+                                   (lambda ,args
+                                     (let ((this-fun ,orig-fun))
+                                       ,@fun-body)))))))
+                          bindings)))
+    ;; Bind the original functions first so that they are available within the
+    ;; `cl-letf' body.
+    `(let ,(cl-loop for binding in bindings by #'cddr collect binding)
+       (cl-letf ,(cl-loop for binding in (cdr bindings) by #'cddr collect binding)
+         ,@body))))
 
 (defun rem-maybe-args (&rest args)
   "Selectively create an argument list.
