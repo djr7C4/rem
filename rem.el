@@ -34,7 +34,6 @@
 (require 'help)
 (require 'llama)
 (require 'map)
-(require 'noflet)
 (require 'transient)
 (require 'url-parse)
 
