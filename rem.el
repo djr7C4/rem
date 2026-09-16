@@ -4,12 +4,11 @@
 ;; Author: David J. Rosenbaum <djr7c4@gmail.com>
 ;; Keywords: utilities
 ;; URL: https://github.com/djr7C4/rem
-;; Version: 0.10.0
+;; Version: 0.11.0
 ;; Package-Requires: (
 ;;   (emacs "29")
 ;;   (f "0.21.0")
 ;;   (llama "1.0.0")
-;;   (noflet "0.0.15")
 ;;   (transient "0.12.0"))
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -253,6 +252,17 @@ It is similar to `llama' but wraps BODY in an implicit `progn'."
   `(progn ,@(mapcar (lambda (k) `(rem-define-fn ,k)) (-iota 9 2))))
 
 (rem-define-fns)
+
+(cl-defmacro rem-dflet ((&rest bindings) &rest body)
+  "This is the same as `cl-flet' but with dynamic bindings."
+  `(cl-letf ,(mapcar (lambda (binding)
+                       (dsb (sym args &rest fun-body)
+                           binding
+                         `((symbol-function ',sym)
+                           (lambda ,args
+                             ,@fun-body))))
+                     bindings)
+     ,@body))
 
 (defun rem-maybe-args (&rest args)
   "Selectively create an argument list.
@@ -1161,7 +1171,7 @@ It does not match ambiguous things such as abc.xyz.")
 ;;   ("mvs" . "cl-multiple-value-setq")
 ;;   ("with-gensyms" . "cl-with-gensyms")
 ;;   ("once-only" . "cl-once-only")
-;;   ("dflet" . "noflet")
+;;   ("dflet" . "rem-dflet")
 ;;   ("plet" . "pcase-let")
 ;;   ("plet*" . "pcase-let*")
 ;;   ("psetq*" . "pcase-setq")
