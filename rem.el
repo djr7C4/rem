@@ -257,6 +257,7 @@ It is similar to `llama' but wraps BODY in an implicit `progn'."
 
 Inside the body of each local function binding, the symbol
 \\='this-fun is bound to the original function."
+  (declare (indent 1))
   (let ((bindings (mapcan (lambda (binding)
                             (dsb (sym args &rest fun-body)
                                 binding
