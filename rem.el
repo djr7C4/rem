@@ -909,7 +909,10 @@ changed."
   (apply #'process-file (executable-find (car command)) infile destination display (cdr command)))
 
 (cl-defun rem-run-command (command &key allow-remote (trim-output t) (validate t validate-supplied-p) error (return 'output return-supplied-p) nostderr buffer)
-  "Execute COMMAND and return its exit code and output as a list.
+  "Execute COMMAND and return its output.
+
+By default, nil is returned when COMMAND exits with a non-zero
+status.
 
 This function is a combination of `call-process-shell-command',
 `process-file-shell-command', `call-process' and `process-file'
